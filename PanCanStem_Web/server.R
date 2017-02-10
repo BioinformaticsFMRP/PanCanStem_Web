@@ -33,7 +33,6 @@ shinyServer(function(input, output,session) {
   
   observeEvent(input$feature, {
     # This must be checked how do we have smoking?
-    print(input$feature)
     updateSelectizeInput(session, 'featureLevels', choices = {
       if(is.null(input$feature) || input$feature == "") {
         ret <- NULL
@@ -47,7 +46,7 @@ shinyServer(function(input, output,session) {
   })
   
   volcano.values <- reactive({
-    feature <- "IDH1"
+    feature <- input$feature
     if(isolate({input$experiment}) == "Gene expression")  {
       pd <- pd.maf.RNA
       primary <- pd.mRNA.prim[pd.mRNA.prim$sample.type %in% c("01","03"),"TCGAlong.id"]
