@@ -23,7 +23,7 @@ getTCGAdisease <- function(){
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel("Old Faithful Geyser Data"),
+  titlePanel("PanCanStem_Web"),
   
   # Sidebar with a slider input for number of bins 
   sidebarLayout(
@@ -38,6 +38,10 @@ shinyUI(fluidPage(
                      multiple = FALSE),
       selectizeInput('feature',
                      'Feature',
+                     NULL,
+                     multiple = FALSE),
+      selectizeInput('featureLevels',
+                     'Feature Levels',
                      NULL,
                      multiple = FALSE),
       actionButton("plot",
