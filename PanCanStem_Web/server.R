@@ -93,7 +93,7 @@ shinyServer(function(input, output,session) {
     }
   })
   
-  observeEvent(input$calculate , {
+  observeEvent(input$plot , {
     output$distPlot <- renderPlot({
       ret <- volcano.values()
       feature.level <- isolate({input$pathway})
@@ -101,7 +101,7 @@ shinyServer(function(input, output,session) {
         plotEnrichment(ret$pathways[[feature.level]], ret$stats) + labs(title=input$pathway)
     })
   })
-  observeEvent(input$plot , {
+  observeEvent(input$calculate , {
     output$plotGseaTable <- renderPlot({
       ret <- volcano.values()
       plotGseaTable(ret$pathways, ret$stats, ret$result,  gseaParam = 0.5)
