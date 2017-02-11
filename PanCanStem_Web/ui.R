@@ -1,13 +1,6 @@
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-# 
-#    http://shiny.rstudio.com/
-#
-
+library(shinydashboard)
 library(shiny)
+library(shinyjs)
 
 getTCGAdisease <- function(){
   projects <- TCGAbiolinks:::getGDCprojects()
@@ -19,43 +12,77 @@ getTCGAdisease <- function(){
   tcga.disease <- tcga.disease[sort(names(tcga.disease), index.return=TRUE)$ix]
   return(tcga.disease)
 }
-# Define UI for application that draws a histogram
-shinyUI(fluidPage(
-  
-  # Application title
-  titlePanel("PanCanStem_Web"),
-  
-  # Sidebar with a slider input for number of bins 
-  sidebarLayout(
-    sidebarPanel(
-      selectizeInput('experiment',
-                     'Experiment filter',
-                     c("Gene expression","DNA methylation"),
-                     multiple = FALSE),
-      selectizeInput('cancertype',
-                     'Cancer type',
-                     getTCGAdisease(),
-                     multiple = FALSE),
-      selectizeInput('feature',
-                     'Feature',
-                     NULL,
-                     multiple = FALSE),
-      selectizeInput('featureLevels',
-                     'Feature Levels',
-                     NULL,
-                     multiple = FALSE),
-      actionButton("plot",
-                   "Plot",
-                   style = "background-color: #000080;
-                                    color: #FFFFFF;
-                                    margin-left: auto;
-                                    margin-right: auto;
-                                    width: 100%",
-                   icon = icon("flask"))
+
+header <- dashboardHeader(
+  title = "PanCanStem_Web"
+)
+
+body <- dashboardBody(
+  tagList(
+    singleton(tags$head(tags$script(
+      singleton(tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "pancan.css")))
+    )))),
+  fluidRow(
+    column(width = 9,
+           box(width = NULL, solidHeader = TRUE,
+               plotOutput("plotGseaTable")
+           ),
+           box(width = NULL,
+               plotOutput("distPlot")
+           )
     ),
-    # Show a plot of the generated distribution
-    mainPanel(
-      plotOutput("distPlot")
+    column(width = 3,
+           box(width = NULL, 
+               selectizeInput('experiment',
+                              'Experiment filter',
+                              c("Gene expression","DNA methylation"),
+                              multiple = FALSE),
+               selectizeInput('cancertype',
+                              'Cancer type',
+                              NULL,
+                              #getTCGAdisease(),
+                              multiple = FALSE),
+               selectizeInput('feature',
+                              'Feature',
+                              NULL,
+                              multiple = FALSE),
+               actionButton("calculate",
+                            "Calculate",
+                            style = "background-color: #000080;
+                            color: #FFFFFF;
+                            margin-left: auto;
+                            margin-right: auto;
+                            width: 100%",
+                            icon = icon("flask"))
+           ),
+           box(width = NULL, 
+               selectizeInput('pathway',
+                              'Pathway',
+                              NULL,
+                              multiple = FALSE),
+               actionButton("plot",
+                            "Plot GSEA enrichment",
+                            style = "background-color: #000080;
+                            color: #FFFFFF;
+                            margin-left: auto;
+                            margin-right: auto;
+                            width: 100%",
+                            icon = icon("flask"))
+           )
     )
   )
-))
+)
+
+shinyUI(
+  bootstrapPage(
+    useShinyjs(),
+    div(id = "loading-content",
+        img(src = "loading.gif")
+        ),
+    dashboardPage(
+      skin = "blue",
+      header,
+      dashboardSidebar(disable = TRUE),
+      body)
+  )
+)

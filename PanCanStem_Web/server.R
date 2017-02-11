@@ -14,71 +14,98 @@ load("data/pd.450.prim_20170207.Rda")
 load("data/pd.maf.450.Rda")
 load("data/pd.maf.RNA.Rda")
 load("data/pd.mRNA.prim_20170208.Rda")
+load("data/features.Rda")
 set.seed(10)
-
-
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output,session) {
   
-  
-  observeEvent(input$experiment, {
-    # This must be checked how do we have smoking?
+  observe({
     updateSelectizeInput(session, 'feature', choices = {
-      if(isolate({input$experiment}) == "Gene expression") ret <- as.character(colnames(pd.maf.RNA))
-      if(isolate({input$experiment}) == "DNA methylation")  ret <- as.character(colnames(pd.maf.450))
-      ret
+      sort(unique(as.character(features)))
+    }, server = TRUE)
+    updateSelectizeInput(session, 'cancertype', choices = {
+      sort(unique(pd.maf.450$cancer.type))
     }, server = TRUE)
   })
   
+  
   observeEvent(input$feature, {
-    # This must be checked how do we have smoking?
-    updateSelectizeInput(session, 'featureLevels', choices = {
+    updateSelectizeInput(session, 'pathway', choices = {
       if(is.null(input$feature) || input$feature == "") {
         ret <- NULL
       } else if(isolate({input$experiment}) == "Gene expression") {
-        ret <- as.character(unique(pd.maf.RNA[,input$feature]))
+        if(input$feature %in% colnames(pd.maf.RNA)) {
+          ret <- levels(pd.maf.RNA[,get(input$feature)])
+        } else {
+          ret <- as.character(unique(pd.mRNA.prim[,get(input$feature)]))
+        }
       } else if(isolate({input$experiment}) == "DNA methylation") {
-        ret <- as.character(unique(pd.maf.450[,input$feature]))
+        if(input$feature %in% colnames(pd.maf.450)) {
+          ret <- levels(pd.maf.450[,get(input$feature)])
+        } else {
+          ret <- as.character(unique(pd.450.prim[,get(input$feature)]))
+        }
       }
       ret
     }, server = TRUE)
   })
   
   volcano.values <- reactive({
-    feature <- input$feature
-    if(isolate({input$experiment}) == "Gene expression")  {
-      pd <- pd.maf.RNA
-      primary <- pd.mRNA.prim[pd.mRNA.prim$sample.type %in% c("01","03"),"TCGAlong.id"]
-      col <- "RNAss"
+    if(input$calculate){
+      feature <- isolate({input$feature})
+      if(isolate({input$experiment}) == "Gene expression")  {
+        if(feature %in% colnames(pd.maf.RNA)) {
+          pd <- pd.maf.RNA
+          nperm <- 1000
+        } else {
+          pd <- pd.mRNA.prim
+          nperm <- 10000
+        }
+        primary <- as.character(pd.mRNA.prim[pd.mRNA.prim$sample.type %in% c("01","03"),get("TCGAlong.id")])
+        col <- "RNAss"
+      }
+      if(isolate({input$experiment}) == "DNA methylation")  {
+        if(feature %in% colnames(pd.maf.450)) {
+          pd <- pd.maf.450
+          nperm <- 1000
+        } else {
+          pd <- pd.450.prim
+          nperm <- 10000
+        }
+        primary <- as.character(pd.450.prim[pd.450.prim$sample.type %in% c("01","03"),get("TCGAlong.id")])
+        col <- "DNAss"
+      }
+      progress <- shiny::Progress$new()
+      progress$set(message = "Calculating", value = 0, detail = "Preparing data")
+      on.exit(progress$close())
+      test <- subset(pd, pd$cancer.type %in% cancer.type  & pd$TCGAlong.id %in% primary) 
+      stats <- test[order(test[,col,with=FALSE]),] #rank samples
+      stats <- structure(stats[,get(col)], names = as.character(stats$TCGAlong.id))
+      pathways <- as.list(unstack(test[,c("TCGAlong.id", feature),with = FALSE]))
+      progress$set(value = 0.5, detail = "Executing Gene Set Enrichment Analysis")
+      result <- fgsea(pathways = pathways, stats = stats,  nperm=nperm, minSize=5, maxSize=500)
+      
+      ret <- list(stats = stats, 
+                  result = result,
+                  pathways = pathways)
+      return(ret)
     }
-    if(isolate({input$experiment})  == "DNA methylation")  {
-      pd <- pd.maf.450
-      primary <- pd.450.prim[pd.450.prim$sample.type %in% c("01","03"),"TCGAlong.id"]
-      col <- "DNAss"
-    }
-    withProgress(message = 'Calculating...',
-                 detail = 'This may take a while...', value = 0, {
-                   test <- subset(pd, pd$cancer.type %in% cancer.type  & pd$TCGAlong.id %in% primary) 
-                   test <- droplevels(test)
-                   stats <- test[order(test[,col]),] #rank samples
-                   stats <- structure(stats[,col], names=as.character(stats$TCGAlong.id))
-                   pathways <- as.list(unstack(test[,c("TCGAlong.id", feature )]))
-                   
-                   result <- fgsea(pathways = pathways, stats = stats,  nperm=10, minSize=5, maxSize=500)
-                 })
-    ret <- list(stats = stats, 
-                result = result,
-                pathways = pathways)
-    return(ret)
   })
   
-  observeEvent(input$plot , {
+  observeEvent(input$calculate , {
     output$distPlot <- renderPlot({
       ret <- volcano.values()
-      plotEnrichment(ret$pathways[[input$featureLevels]], ret$stats) + labs(title=input$featureLevels)
-      # plotGseaTable(ret$pathways, ret$stats, ret$result,  gseaParam = 0.5)
+      feature.level <- isolate({input$pathway})
+      if(!is.null(feature.level) & feature.level != "") 
+        plotEnrichment(ret$pathways[[feature.level]], ret$stats) + labs(title=input$pathway)
     })
   })
-  
+  observeEvent(input$plot , {
+    output$plotGseaTable <- renderPlot({
+      ret <- volcano.values()
+      plotGseaTable(ret$pathways, ret$stats, ret$result,  gseaParam = 0.5)
+    })
+  })
+  hide("loading-content", TRUE, "fade")
 })
