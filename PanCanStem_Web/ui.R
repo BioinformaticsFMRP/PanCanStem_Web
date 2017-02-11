@@ -1,7 +1,7 @@
 library(shinydashboard)
 library(shiny)
 library(shinyjs)
-
+library(shinyBS)
 getTCGAdisease <- function(){
   projects <- TCGAbiolinks:::getGDCprojects()
   disease <-  projects$project_id
@@ -24,6 +24,7 @@ body <- dashboardBody(
     )))),
   fluidRow(
     column(width = 9,
+           bsAlert("message"),
            box(width = NULL, solidHeader = TRUE,
                plotOutput("plotGseaTable")
            ),

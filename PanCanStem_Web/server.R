@@ -10,6 +10,7 @@ library(data.table)
 library(shiny)
 library(ggplot2)
 library(fgsea)
+library(shinyBS)
 load("data/pd.450.prim_20170207.Rda")
 load("data/pd.maf.450.Rda")
 load("data/pd.maf.RNA.Rda")
@@ -52,6 +53,7 @@ shinyServer(function(input, output,session) {
   })
   
   volcano.values <- reactive({
+    closeAlert(session, "Alert")
     if(input$calculate){
       feature <- isolate({input$feature})
       if(isolate({input$experiment}) == "Gene expression")  {
@@ -79,9 +81,14 @@ shinyServer(function(input, output,session) {
       progress <- shiny::Progress$new()
       progress$set(message = "Calculating", value = 0, detail = "Preparing data")
       on.exit(progress$close())
-      test <- subset(pd, pd$cancer.type %in% cancer.type  & pd$TCGAlong.id %in% primary) 
+      test <- subset(pd, pd$cancer.type %in% isolate({input$cancertype})  & pd$TCGAlong.id %in% primary) 
       stats <- test[order(test[,col,with=FALSE]),] #rank samples
       stats <- structure(stats[,get(col)], names = as.character(stats$TCGAlong.id))
+      if(length(unique(test[,get(feature)])) < 2){
+        createAlert(session, "message", "Alert", title = "Data input error", style =  "danger",
+                    content = "There is not two levels for this combination. We cannot execute Gene Set Enrichment Analysis for this case.", append = FALSE)
+        return(NULL)
+      }
       pathways <- as.list(unstack(test[,c("TCGAlong.id", feature),with = FALSE]))
       progress$set(value = 0.5, detail = "Executing Gene Set Enrichment Analysis")
       result <- fgsea(pathways = pathways, stats = stats,  nperm=nperm, minSize=5, maxSize=500)
@@ -104,7 +111,7 @@ shinyServer(function(input, output,session) {
   observeEvent(input$calculate , {
     output$plotGseaTable <- renderPlot({
       ret <- volcano.values()
-      plotGseaTable(ret$pathways, ret$stats, ret$result,  gseaParam = 0.5)
+      if(!is.null(ret)) plotGseaTable(ret$pathways, ret$stats, ret$result,  gseaParam = 0.5)
     })
   })
   hide("loading-content", TRUE, "fade")
