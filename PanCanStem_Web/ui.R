@@ -26,18 +26,24 @@ body <- dashboardBody(
     column(width = 9,
            bsAlert("message"),
            box(width = NULL, solidHeader = TRUE,
-               plotOutput("plotGseaTable")
+               column(DT::dataTableOutput('tbl'), width = 8)
            ),
+           box(width = NULL, solidHeader = TRUE,
+               plotOutput("butterflyPlot")
+           ),
+           box(width = NULL, solidHeader = TRUE,
+               plotOutput("plotGseaTableDNA")
+           ),
+           box(width = NULL, solidHeader = TRUE,
+               plotOutput("plotGseaTableRNA")
+           ),
+           
            box(width = NULL,
                plotOutput("distPlot")
            )
     ),
     column(width = 3,
            box(width = NULL, 
-               selectizeInput('experiment',
-                              'Experiment filter',
-                              c("Gene expression","DNA methylation"),
-                              multiple = FALSE),
                selectizeInput('cancertype',
                               'Cancer type',
                               NULL,

@@ -11,16 +11,70 @@ library(shiny)
 library(ggplot2)
 library(fgsea)
 library(shinyBS)
+library(DT)
 load("data/pd.450.prim_20170207.Rda")
 load("data/pd.maf.450.Rda")
 load("data/pd.maf.RNA.Rda")
 load("data/pd.mRNA.prim_20170208.Rda")
+load("data/pd.all.Rda")
+load("data/pd.merg.Rda")
 load("data/features.Rda")
 set.seed(10)
+
+cancer.colors <- c( "ACC"="white",
+                    "BLCA"="white",
+                    "BRCA"="pink",
+                    "CESC"="white",
+                    "CHOL"="white",
+                    "COAD"="white",
+                    "DLBC"="white",
+                    "ESCA"="white",
+                    "GBM"="white",
+                    "HNSC"="white",
+                    "KICH"="orange",
+                    "KIRC"="orange",
+                    "KIRP"="orange",
+                    "LAML"="white",
+                    "LGG"="white",
+                    "LIHC"="green",
+                    "LUAD"="white",
+                    "LUSC"="white",
+                    "MESO"="white",
+                    "OV"="	#008080", # Teal
+                    "PAAD"="white",
+                    "PCPG"="white",
+                    "PRAD"="white",
+                    "READ"="white",
+                    "SARC"="white",
+                    "SKCM"="white",
+                    "STAD"="white",
+                    "TGCT"="white",
+                    "THCA"="white",
+                    "THYM"="white",
+                    "UCEC"="white",
+                    "UCS"="white",
+                    "UVM"="white"
+)
+
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output,session) {
   
+  output$tbl = DT::renderDataTable(
+    datatable(pd.all)  %>% 
+      formatStyle(
+        'padj',
+        backgroundColor = styleInterval(c(0.5), c('red', 'white'))
+      ) %>% 
+      formatStyle(
+        'cancer.type',
+        backgroundColor = styleEqual(
+          sort(unique(pd.all$cancer.type)), cancer.colors[sort(unique(pd.all$cancer.type))]
+        )
+      )
+    ,
+    options = list(scrollX = TRUE, keys = TRUE, pageLength = 5)
+  )
   observe({
     updateSelectizeInput(session, 'feature', choices = {
       sort(unique(as.character(features)))
@@ -56,46 +110,55 @@ shinyServer(function(input, output,session) {
     closeAlert(session, "Alert")
     if(input$calculate){
       feature <- isolate({input$feature})
-      if(isolate({input$experiment}) == "Gene expression")  {
-        if(feature %in% colnames(pd.maf.RNA)) {
-          pd <- pd.maf.RNA
-          nperm <- 1000
-        } else {
-          pd <- pd.mRNA.prim
-          nperm <- 10000
-        }
-        primary <- as.character(pd.mRNA.prim[pd.mRNA.prim$sample.type %in% c("01","03"),get("TCGAlong.id")])
-        col <- "RNAss"
+      if(feature %in% colnames(pd.maf.RNA)) {
+        pd <- pd.maf.RNA
+        nperm <- 1000
+      } else {
+        pd <- pd.mRNA.prim
+        nperm <- 10000
       }
-      if(isolate({input$experiment}) == "DNA methylation")  {
-        if(feature %in% colnames(pd.maf.450)) {
-          pd <- pd.maf.450
-          nperm <- 1000
-        } else {
-          pd <- pd.450.prim
-          nperm <- 10000
-        }
-        primary <- as.character(pd.450.prim[pd.450.prim$sample.type %in% c("01","03"),get("TCGAlong.id")])
-        col <- "DNAss"
-      }
+      primary <- as.character(pd.mRNA.prim[pd.mRNA.prim$sample.type %in% c("01","03"),get("TCGAlong.id")])
+      col <- "RNAss"
       progress <- shiny::Progress$new()
       progress$set(message = "Calculating", value = 0, detail = "Preparing data")
       on.exit(progress$close())
       test <- subset(pd, pd$cancer.type %in% isolate({input$cancertype})  & pd$TCGAlong.id %in% primary) 
-      stats <- test[order(test[,col,with=FALSE]),] #rank samples
-      stats <- structure(stats[,get(col)], names = as.character(stats$TCGAlong.id))
+      stats.rna <- test[order(test[,col,with=FALSE]),] #rank samples
+      stats.rna <- structure(stats.rna[,get(col)], names = as.character(stats.rna$TCGAlong.id))
       if(length(unique(test[,get(feature)])) < 2){
         createAlert(session, "message", "Alert", title = "Data input error", style =  "danger",
                     content = "There is not two levels for this combination. We cannot execute Gene Set Enrichment Analysis for this case.", append = FALSE)
         return(NULL)
       }
-      pathways <- as.list(unstack(test[,c("TCGAlong.id", feature),with = FALSE]))
+      pathways.rna <- as.list(unstack(test[,c("TCGAlong.id", feature),with = FALSE]))
       progress$set(value = 0.5, detail = "Executing Gene Set Enrichment Analysis")
-      result <- fgsea(pathways = pathways, stats = stats,  nperm=nperm, minSize=5, maxSize=500)
+      result.rna <- fgsea(pathways = pathways.rna, stats = stats.rna,  nperm=nperm, minSize=5, maxSize=500)
       
-      ret <- list(stats = stats, 
-                  result = result,
-                  pathways = pathways)
+      if(feature %in% colnames(pd.maf.450)) {
+        pd <- pd.maf.450
+      } else {
+        pd <- pd.450.prim
+      }
+      primary <- as.character(pd.450.prim[pd.450.prim$sample.type %in% c("01","03"),get("TCGAlong.id")])
+      col <- "DNAss"
+      test <- subset(pd, pd$cancer.type %in% isolate({input$cancertype})  & pd$TCGAlong.id %in% primary) 
+      stats.dna <- test[order(test[,col,with=FALSE]),] #rank samples
+      stats.dna <- structure(stats.dna[,get(col)], names = as.character(stats.dna$TCGAlong.id))
+      if(length(unique(test[,get(feature)])) < 2){
+        createAlert(session, "message", "Alert", title = "Data input error", style =  "danger",
+                    content = "There is not two levels for this combination. We cannot execute Gene Set Enrichment Analysis for this case.", append = FALSE)
+        return(NULL)
+      }
+      pathways.dna <- as.list(unstack(test[,c("TCGAlong.id", feature),with = FALSE]))
+      progress$set(value = 0.5, detail = "Executing Gene Set Enrichment Analysis")
+      result.dna <- fgsea(pathways = pathways.dna, stats = stats.dna,  nperm=nperm, minSize=5, maxSize=500)
+      
+      ret <- list(stats.rna = stats.rna, 
+                  stats.dna = stats.dna, 
+                  result.rna = result.rna,
+                  result.dna = result.dna,
+                  pathways.rna = pathways.rna,
+                  pathways.dna = pathways.dna)
       return(ret)
     }
   })
@@ -109,10 +172,34 @@ shinyServer(function(input, output,session) {
     })
   })
   observeEvent(input$calculate , {
-    output$plotGseaTable <- renderPlot({
+    output$plotGseaTableRNA <- renderPlot({
       ret <- volcano.values()
-      if(!is.null(ret)) plotGseaTable(ret$pathways, ret$stats, ret$result,  gseaParam = 0.5)
+      if(!is.null(ret)) plotGseaTable(ret$pathways.rna, ret$stats.rna, ret$result.rna,  gseaParam = 0.5)
     })
   })
+  output$butterflyPlot <- renderPlot({
+    ggplot(pd.merg[pd.merg$pathway.RNA %in% "Mutant",], 
+           aes(x = NES.DNA, y = NES.RNA, color = c(padj.DNA < 0.05 | padj.RNA < 0.05))) + 
+      geom_point() + 
+      geom_vline(xintercept = 0) +
+      geom_hline(yintercept = 0) +
+      facet_wrap(~cancer.type.RNA, scales = "free") + 
+      scale_color_manual(values = c("black","red")) +
+      labs(colour = "Significant (padj<0.05)", 
+           title = "DNAss vs RNAss Mutation Enrichment", 
+           x = "DNAss Enrichment Score (NES)", 
+           y = "RNAss Enrichment Score (NES)") +
+      theme_bw() 
+  })
+  
+  observeEvent(input$calculate , {
+    output$plotGseaTableDNA  <- renderPlot({
+      ret <- volcano.values()
+      if(!is.null(ret)) plotGseaTable(ret$pathways.dna, ret$stats.dna, ret$result.dna,  gseaParam = 0.5)
+    })
+  })
+  
   hide("loading-content", TRUE, "fade")
 })
+
+
