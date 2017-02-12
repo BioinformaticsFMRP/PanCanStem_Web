@@ -76,14 +76,16 @@ shinyServer(function(input, output,session) {
       )
   )
   observe({
-    updateSelectizeInput(session, 'feature', choices = {
-      sort(unique(as.character(features)))
-    }, server = TRUE)
     updateSelectizeInput(session, 'cancertype', choices = {
       sort(unique(pd.maf.450$cancer.type))
     }, server = TRUE)
   })
   
+  observeEvent(input$cancertype, {
+    updateSelectizeInput(session, 'feature', choices = {
+      sort(unique(as.character(pd.all[pd.all$cancer.type %in% input$cancertype,"Pt.Feature"])))
+    }, server = TRUE)
+  })
   
   observeEvent(input$feature, {
     feature <- isolate({input$feature})
@@ -91,12 +93,12 @@ shinyServer(function(input, output,session) {
       if(is.null(feature) || feature == "") {
         ret <- NULL
       } else if(feature %in% colnames(pd.maf.RNA)) {
-        ret <- unique(levels(pd.maf.RNA[,get(input$feature)]),
-                      levels(pd.maf.450[,get(feature)]))
+        ret <- unique(levels(pd.maf.RNA[pd.maf.RNA$cancer.type %in% isolate({input$cancertype}) ,get(feature)]),
+                      levels(pd.maf.450[pd.maf.450$cancer.type %in% isolate({input$cancertype}) ,get(feature)]))
       } else {
-        ret <- as.character(unique(
-          pd.mRNA.prim[,get(input$feature)],
-          pd.450.prim[,get(feature)]))
+        ret <- unique(as.character(
+          pd.mRNA.prim[pd.mRNA.prim$cancer.type %in% isolate({input$cancertype}),get(feature)],
+          pd.450.prim[pd.450.prim$cancer.type %in% isolate({input$cancertype}),get(feature)]))
       }
       ret
     }, server = TRUE)
