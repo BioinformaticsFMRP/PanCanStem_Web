@@ -165,8 +165,14 @@ shinyServer(function(input, output,session) {
     output$plotEnrichmentDNA <- renderPlot({
       ret <- volcano.values()
       feature.level <- isolate({input$pathway})
-      if(!is.null(feature.level) & feature.level != "") 
+      if(!is.null(feature.level) & feature.level != "") {
+        if(!feature.level %in% names(ret$pathways.dna)){ 
+          createAlert(session, "message", "Alert", title = "Error", style =  "danger",
+                      content = "Please execute Gene Set Enrichment Analysis again.", append = FALSE)
+          return(NULL)
+        }
         plotEnrichment(ret$pathways.dna[[feature.level]], ret$stats.dna) + labs(title=input$pathway.dna)
+      }
     })
   })
   
@@ -174,8 +180,14 @@ shinyServer(function(input, output,session) {
     output$plotEnrichmentRNA <- renderPlot({
       ret <- volcano.values()
       feature.level <- isolate({input$pathway})
-      if(!is.null(feature.level) & feature.level != "") 
+      if(!is.null(feature.level) & feature.level != "") {
+        if(!feature.level %in% names(ret$pathways.rna)){ 
+          createAlert(session, "message", "Alert", title = "Error", style =  "danger",
+                      content = "Please execute Gene Set Enrichment Analysis again.", append = FALSE)
+          return(NULL)
+        }
         plotEnrichment(ret$pathways.rna[[feature.level]], ret$stats.rna) + labs(title=input$pathway.rna)
+      }
     })
   })
   observeEvent(input$calculate , {
