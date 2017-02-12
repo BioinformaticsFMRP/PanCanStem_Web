@@ -196,7 +196,7 @@ shinyServer(function(input, output,session) {
         geom_hline(yintercept = 0) +
         scale_color_manual(values = c("black","red")) +
         labs(colour = "Significant (padj<0.05)", 
-             title = paste0("DNAss vs RNAss Mutation Enrichment (" input$cancertype,")"), 
+             title = paste0("DNAss vs RNAss Mutation Enrichment (",input$cancertype,")"), 
              x = "DNAss Enrichment Score (NES)", 
              y = "RNAss Enrichment Score (NES)") +
         theme_bw() 
