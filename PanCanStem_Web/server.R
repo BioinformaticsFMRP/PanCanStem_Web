@@ -71,8 +71,8 @@ shinyServer(function(input, output,session) {
         backgroundColor = styleEqual(
           sort(unique(pd.all$cancer.type)), cancer.colors[sort(unique(pd.all$cancer.type))]
         )
-      )
-    ,
+      ),
+    filter = 'top', 
     options = list(scrollX = TRUE, keys = TRUE, pageLength = 5)
   )
   observe({
@@ -177,20 +177,23 @@ shinyServer(function(input, output,session) {
       if(!is.null(ret)) plotGseaTable(ret$pathways.rna, ret$stats.rna, ret$result.rna,  gseaParam = 0.5)
     })
   })
-  output$butterflyPlot <- renderPlot({
-    ggplot(pd.merg[pd.merg$pathway.RNA %in% "Mutant",], 
-           aes(x = NES.DNA, y = NES.RNA, color = c(padj.DNA < 0.05 | padj.RNA < 0.05))) + 
-      geom_point() + 
-      geom_vline(xintercept = 0) +
-      geom_hline(yintercept = 0) +
-      facet_wrap(~cancer.type.RNA, scales = "free") + 
-      scale_color_manual(values = c("black","red")) +
-      labs(colour = "Significant (padj<0.05)", 
-           title = "DNAss vs RNAss Mutation Enrichment", 
-           x = "DNAss Enrichment Score (NES)", 
-           y = "RNAss Enrichment Score (NES)") +
-      theme_bw() 
+  observeEvent(input$cancertype , {
+    output$butterflyPlot <- renderPlot({
+      ggplot(pd.merg[pd.merg$pathway.RNA %in% "Mutant" & pd.merg$cancer.type.DNA %in% input$cancertype,], 
+             aes(x = NES.DNA, y = NES.RNA, color = c(padj.DNA < 0.05 | padj.RNA < 0.05))) + 
+        geom_point() + 
+        geom_vline(xintercept = 0) +
+        geom_hline(yintercept = 0) +
+        facet_wrap(~cancer.type.RNA, scales = "free") + 
+        scale_color_manual(values = c("black","red")) +
+        labs(colour = "Significant (padj<0.05)", 
+             title = "DNAss vs RNAss Mutation Enrichment", 
+             x = "DNAss Enrichment Score (NES)", 
+             y = "RNAss Enrichment Score (NES)") +
+        theme_bw() 
+    })
   })
+  
   
   observeEvent(input$calculate , {
     output$plotGseaTableDNA  <- renderPlot({

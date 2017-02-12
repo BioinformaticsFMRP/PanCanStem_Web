@@ -26,7 +26,7 @@ body <- dashboardBody(
     column(width = 9,
            bsAlert("message"),
            box(width = NULL, solidHeader = TRUE,
-               column(DT::dataTableOutput('tbl'), width = 8)
+               column(DT::dataTableOutput('tbl'), width = 6)
            ),
            box(width = NULL, solidHeader = TRUE,
                plotOutput("butterflyPlot")
