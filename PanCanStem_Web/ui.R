@@ -38,7 +38,7 @@ busyIndicator <- function(text = "Working in progress...") {
 
 
 header <- dashboardHeader(
-  title = "PanCanStem_Web"
+  title = " PanCanStem Project"
 )
 
 body <- dashboardBody(
@@ -54,7 +54,7 @@ body <- dashboardBody(
                DT::dataTableOutput('tbl')
            ),
            box(width = NULL, solidHeader = TRUE,
-               title = "DNAss vs RNAss Mutation Enrichment",
+               title = "Enrichment analysis for DNAss and RNAss acrosss Clinical and Molecular phenotypes (Mutation/Molecular subtypes)",
                plotOutput("butterflyPlot")
            ),
            box(width = NULL, solidHeader = TRUE,
