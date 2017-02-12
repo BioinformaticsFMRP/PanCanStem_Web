@@ -55,7 +55,7 @@ body <- dashboardBody(
                DT::dataTableOutput('tbl')
            ),
            box(width = NULL, solidHeader = TRUE,
-               title = "Enrichment analysis for DNAss and RNAss acrosss Clinical and Molecular phenotypes (Mutation/Molecular subtypes)",
+               title = "DNAss vs RNAss - Enrichment Plot",
                plotOutput("butterflyPlot")
            ),
            box(width = NULL, solidHeader = TRUE,
