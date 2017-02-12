@@ -61,7 +61,9 @@ cancer.colors <- c( "ACC"="white",
 shinyServer(function(input, output,session) {
   
   output$tbl = DT::renderDataTable(
-    datatable(pd.all)  %>% 
+    datatable(pd.all,
+              filter = 'top', 
+              options = list(scrollX = TRUE, keys = TRUE, pageLength = 5))  %>% 
       formatStyle(
         'padj',
         backgroundColor = styleInterval(c(0.5), c('red', 'white'))
@@ -71,9 +73,7 @@ shinyServer(function(input, output,session) {
         backgroundColor = styleEqual(
           sort(unique(pd.all$cancer.type)), cancer.colors[sort(unique(pd.all$cancer.type))]
         )
-      ),
-    filter = 'top', 
-    options = list(scrollX = TRUE, keys = TRUE, pageLength = 5)
+      )
   )
   observe({
     updateSelectizeInput(session, 'feature', choices = {
@@ -164,11 +164,20 @@ shinyServer(function(input, output,session) {
   })
   
   observeEvent(input$plot , {
-    output$distPlot <- renderPlot({
+    output$plotEnrichmentDNA <- renderPlot({
       ret <- volcano.values()
       feature.level <- isolate({input$pathway})
       if(!is.null(feature.level) & feature.level != "") 
-        plotEnrichment(ret$pathways[[feature.level]], ret$stats) + labs(title=input$pathway)
+        plotEnrichment(ret$pathways.dna[[feature.level]], ret$stats.dna) + labs(title=input$pathway.dna)
+    })
+  })
+  
+  observeEvent(input$plot , {
+    output$plotEnrichmentRNA <- renderPlot({
+      ret <- volcano.values()
+      feature.level <- isolate({input$pathway})
+      if(!is.null(feature.level) & feature.level != "") 
+        plotEnrichment(ret$pathways.rna[[feature.level]], ret$stats.rna) + labs(title=input$pathway.rna)
     })
   })
   observeEvent(input$calculate , {
@@ -179,18 +188,19 @@ shinyServer(function(input, output,session) {
   })
   observeEvent(input$cancertype , {
     output$butterflyPlot <- renderPlot({
+      if(!is.null(input$cancertype) & input$cancertype != "") {
       ggplot(pd.merg[pd.merg$pathway.RNA %in% "Mutant" & pd.merg$cancer.type.DNA %in% input$cancertype,], 
              aes(x = NES.DNA, y = NES.RNA, color = c(padj.DNA < 0.05 | padj.RNA < 0.05))) + 
         geom_point() + 
         geom_vline(xintercept = 0) +
         geom_hline(yintercept = 0) +
-        facet_wrap(~cancer.type.RNA, scales = "free") + 
         scale_color_manual(values = c("black","red")) +
         labs(colour = "Significant (padj<0.05)", 
-             title = "DNAss vs RNAss Mutation Enrichment", 
+             title = paste0("DNAss vs RNAss Mutation Enrichment (" input$cancertype,")"), 
              x = "DNAss Enrichment Score (NES)", 
              y = "RNAss Enrichment Score (NES)") +
         theme_bw() 
+      }
     })
   })
   

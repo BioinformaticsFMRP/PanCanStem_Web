@@ -13,6 +13,30 @@ getTCGAdisease <- function(){
   return(tcga.disease)
 }
 
+#' busyIndicator
+#'
+# This is a function to indicate the work is in progress, it was created for the plots
+# that rendering were taking long and withprogress was not working.
+# @param text The text to show
+# @param wait The amount of time to wait before showing the busy indicator. The
+#   default is 1000 which is 1 second.
+#
+# @export
+busyIndicator <- function(text = "Working in progress...") {
+  div(
+    id = 'busyModal', class = 'modal', role = 'dialog', 'data-backdrop' = 'static',
+    div(
+      class = 'modal-dialog modal-sm',
+      div(id = 'modal-content-busy',
+          class = 'modal-content',
+          div(class = 'modal-header', h4(class = 'modal-title', text)),
+          div(class = 'modal-body', p(h2(HTML('<i class="fa fa-cog fa-spin"></i>'))))
+      )
+    )
+  )
+}
+
+
 header <- dashboardHeader(
   title = "PanCanStem_Web"
 )
@@ -20,26 +44,28 @@ header <- dashboardHeader(
 body <- dashboardBody(
   tagList(
     singleton(tags$head(tags$script(
-      singleton(tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "pancan.css")))
+      singleton(tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "pancan.css"))),
+      singleton(tags$head(singleton(tags$script(src = 'events.js'))))
     )))),
   fluidRow(
     column(width = 9,
            bsAlert("message"),
            box(width = NULL, solidHeader = TRUE,
-               column(DT::dataTableOutput('tbl'), width = 6)
+               DT::dataTableOutput('tbl')
            ),
            box(width = NULL, solidHeader = TRUE,
+               title = "DNAss vs RNAss Mutation Enrichment",
                plotOutput("butterflyPlot")
            ),
            box(width = NULL, solidHeader = TRUE,
-               plotOutput("plotGseaTableDNA")
+               title = "DNA",
+               plotOutput("plotGseaTableDNA"),
+               plotOutput("plotEnrichmentDNA")
            ),
            box(width = NULL, solidHeader = TRUE,
-               plotOutput("plotGseaTableRNA")
-           ),
-           
-           box(width = NULL,
-               plotOutput("distPlot")
+               title = "RNA",
+               plotOutput("plotGseaTableRNA"),
+               plotOutput("plotEnrichmentRNA")
            )
     ),
     column(width = 3,
@@ -90,6 +116,7 @@ shinyUI(
       skin = "blue",
       header,
       dashboardSidebar(disable = TRUE),
-      body)
+      body),
+    busyIndicator() # Add rendering in progress...
   )
 )
