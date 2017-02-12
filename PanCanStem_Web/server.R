@@ -86,21 +86,17 @@ shinyServer(function(input, output,session) {
   
   
   observeEvent(input$feature, {
+    feature <- isolate({input$feature})
     updateSelectizeInput(session, 'pathway', choices = {
-      if(is.null(input$feature) || input$feature == "") {
+      if(is.null(feature) || feature == "") {
         ret <- NULL
-      } else if(isolate({input$experiment}) == "Gene expression") {
-        if(input$feature %in% colnames(pd.maf.RNA)) {
-          ret <- levels(pd.maf.RNA[,get(input$feature)])
-        } else {
-          ret <- as.character(unique(pd.mRNA.prim[,get(input$feature)]))
-        }
-      } else if(isolate({input$experiment}) == "DNA methylation") {
-        if(input$feature %in% colnames(pd.maf.450)) {
-          ret <- levels(pd.maf.450[,get(input$feature)])
-        } else {
-          ret <- as.character(unique(pd.450.prim[,get(input$feature)]))
-        }
+      } else if(feature %in% colnames(pd.maf.RNA)) {
+        ret <- unique(levels(pd.maf.RNA[,get(input$feature)]),
+                      levels(pd.maf.450[,get(feature)]))
+      } else {
+        ret <- as.character(unique(
+          pd.mRNA.prim[,get(input$feature)],
+          pd.450.prim[,get(feature)]))
       }
       ret
     }, server = TRUE)
@@ -189,17 +185,17 @@ shinyServer(function(input, output,session) {
   observeEvent(input$cancertype , {
     output$butterflyPlot <- renderPlot({
       if(!is.null(input$cancertype) & input$cancertype != "") {
-      ggplot(pd.merg[pd.merg$pathway.RNA %in% "Mutant" & pd.merg$cancer.type.DNA %in% input$cancertype,], 
-             aes(x = NES.DNA, y = NES.RNA, color = c(padj.DNA < 0.05 | padj.RNA < 0.05))) + 
-        geom_point() + 
-        geom_vline(xintercept = 0) +
-        geom_hline(yintercept = 0) +
-        scale_color_manual(values = c("black","red")) +
-        labs(colour = "Significant (padj<0.05)", 
-             title = paste0("DNAss vs RNAss Mutation Enrichment (",input$cancertype,")"), 
-             x = "DNAss Enrichment Score (NES)", 
-             y = "RNAss Enrichment Score (NES)") +
-        theme_bw() 
+        ggplot(pd.merg[pd.merg$pathway.RNA %in% "Mutant" & pd.merg$cancer.type.DNA %in% input$cancertype,], 
+               aes(x = NES.DNA, y = NES.RNA, color = c(padj.DNA < 0.05 | padj.RNA < 0.05))) + 
+          geom_point() + 
+          geom_vline(xintercept = 0) +
+          geom_hline(yintercept = 0) +
+          scale_color_manual(values = c("black","red")) +
+          labs(colour = "Significant (padj<0.05)", 
+               title = paste0("DNAss vs RNAss Mutation Enrichment (",input$cancertype,")"), 
+               x = "DNAss Enrichment Score (NES)", 
+               y = "RNAss Enrichment Score (NES)") +
+          theme_bw() 
       }
     })
   })
