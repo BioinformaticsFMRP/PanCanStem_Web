@@ -2,8 +2,8 @@ library(shinydashboard)
 library(shiny)
 library(shinyjs)
 library(shinyBS)
-library(ggiraph)
-
+library(plotly)
+pdf(NULL)
 getTCGAdisease <- function(){
   projects <- TCGAbiolinks:::getGDCprojects()
   disease <-  projects$project_id
@@ -66,7 +66,7 @@ body <- dashboardBody(
            ),
            box(width = NULL, solidHeader = TRUE,
                title = "Enrichment analysis for DNAss and RNAss acrosss Clinical and Molecular phenotypes (Mutation/Molecular subtypes)",
-               ggiraphOutput("butterflyPlot")
+               plotlyOutput("butterflyPlot")
            ),
            box(width = NULL, solidHeader = TRUE,
                title = "DNA",

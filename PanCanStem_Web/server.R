@@ -4,7 +4,7 @@ library(ggplot2)
 library(fgsea)
 library(shinyBS)
 library(DT)
-library(ggiraph)
+library(plotly)
 
 load("data/pd.450.prim_20170207.Rda")
 load("data/pd.maf.450.Rda")
@@ -69,14 +69,8 @@ shinyServer(function(input, output,session) {
         )
       )
   )
-  observe({
-    updateSelectizeInput(session, 'cancertype', choices = {
-      sort(unique(pd.maf.450$cancer.type))
-    }, server = TRUE)
-  })
-  
+
   observeEvent(input$cancertype, {
-    print(input$cancertype)
     updateSelectizeInput(session, 'feature', choices = {
       sort(unique(as.character(pd.all[pd.all$cancer.type %in% input$cancertype,"Pt.Feature"])))
     }, server = TRUE)
@@ -192,9 +186,9 @@ shinyServer(function(input, output,session) {
     })
   })
   observeEvent(input$cancertype , {
-    output$butterflyPlot <- renderggiraph({
+    output$butterflyPlot <- renderPlotly({
       if(!is.null(input$cancertype) & input$cancertype != "") {
-        ggiraph(code = print(
+        ggplotly(
         ggplot(pd.merg[pd.merg$pathway.RNA %in% "Mutant" & pd.merg$cancer.type.DNA %in% input$cancertype,], 
                aes(x = NES.DNA, y = NES.RNA,tooltip = ID.RNA, color = c(padj.DNA < 0.05 | padj.RNA < 0.05))) + 
           geom_point() + 
@@ -205,7 +199,7 @@ shinyServer(function(input, output,session) {
                title = paste0("DNAss vs RNAss Mutation Enrichment (",input$cancertype,")"), 
                x = "DNAss Enrichment Score (NES)", 
                y = "RNAss Enrichment Score (NES)") +
-          theme_bw()  + geom_point_interactive()))
+          theme_bw())
       }
     })
   })
