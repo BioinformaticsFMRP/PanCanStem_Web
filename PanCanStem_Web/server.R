@@ -1,17 +1,11 @@
-#
-# This is the server logic of a Shiny web application. You can run the 
-# application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-# 
-#    http://shiny.rstudio.com/
-#
 library(data.table)
 library(shiny)
 library(ggplot2)
 library(fgsea)
 library(shinyBS)
 library(DT)
+library(ggiraph)
+
 load("data/pd.450.prim_20170207.Rda")
 load("data/pd.maf.450.Rda")
 load("data/pd.maf.RNA.Rda")
@@ -63,7 +57,7 @@ shinyServer(function(input, output,session) {
   output$tbl = DT::renderDataTable(
     datatable(pd.all,
               filter = 'top', 
-              options = list(scrollX = TRUE, keys = TRUE, pageLength = 5))  %>% 
+              options = list(scrollX = TRUE, pageLength = 5))  %>% 
       formatStyle(
         'padj',
         backgroundColor = styleInterval(c(0.5), c('red', 'white'))
@@ -82,6 +76,7 @@ shinyServer(function(input, output,session) {
   })
   
   observeEvent(input$cancertype, {
+    print(input$cancertype)
     updateSelectizeInput(session, 'feature', choices = {
       sort(unique(as.character(pd.all[pd.all$cancer.type %in% input$cancertype,"Pt.Feature"])))
     }, server = TRUE)
@@ -197,10 +192,11 @@ shinyServer(function(input, output,session) {
     })
   })
   observeEvent(input$cancertype , {
-    output$butterflyPlot <- renderPlot({
+    output$butterflyPlot <- renderggiraph({
       if(!is.null(input$cancertype) & input$cancertype != "") {
+        ggiraph(code = print(
         ggplot(pd.merg[pd.merg$pathway.RNA %in% "Mutant" & pd.merg$cancer.type.DNA %in% input$cancertype,], 
-               aes(x = NES.DNA, y = NES.RNA, color = c(padj.DNA < 0.05 | padj.RNA < 0.05))) + 
+               aes(x = NES.DNA, y = NES.RNA,tooltip = ID.RNA, color = c(padj.DNA < 0.05 | padj.RNA < 0.05))) + 
           geom_point() + 
           geom_vline(xintercept = 0) +
           geom_hline(yintercept = 0) +
@@ -209,7 +205,7 @@ shinyServer(function(input, output,session) {
                title = paste0("DNAss vs RNAss Mutation Enrichment (",input$cancertype,")"), 
                x = "DNAss Enrichment Score (NES)", 
                y = "RNAss Enrichment Score (NES)") +
-          theme_bw() 
+          theme_bw()  + geom_point_interactive()))
       }
     })
   })

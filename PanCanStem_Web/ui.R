@@ -2,6 +2,8 @@ library(shinydashboard)
 library(shiny)
 library(shinyjs)
 library(shinyBS)
+library(ggiraph)
+
 getTCGAdisease <- function(){
   projects <- TCGAbiolinks:::getGDCprojects()
   disease <-  projects$project_id
@@ -46,7 +48,15 @@ body <- dashboardBody(
   tagList(
     singleton(tags$head(tags$script(
       singleton(tags$head(tags$link(rel = "stylesheet", type = "text/css", href = "pancan.css"))),
-      singleton(tags$head(singleton(tags$script(src = 'events.js'))))
+      singleton(tags$head(singleton(tags$script(src = 'events.js')))),
+      singleton(tags$head(tags$style(HTML('
+        .skin-blue .main-header .logo {
+          background-color: #3c8dbc;
+        }
+        .skin-blue .main-header .logo:hover {
+          background-color: #3c8dbc;
+        }
+      '))))
     )))),
   fluidRow(
     column(width = 9,
@@ -56,7 +66,7 @@ body <- dashboardBody(
            ),
            box(width = NULL, solidHeader = TRUE,
                title = "Enrichment analysis for DNAss and RNAss acrosss Clinical and Molecular phenotypes (Mutation/Molecular subtypes)",
-               plotOutput("butterflyPlot")
+               ggiraphOutput("butterflyPlot")
            ),
            box(width = NULL, solidHeader = TRUE,
                title = "DNA",
@@ -73,8 +83,7 @@ body <- dashboardBody(
            box(width = NULL, 
                selectizeInput('cancertype',
                               'Cancer type',
-                              NULL,
-                              #getTCGAdisease(),
+                              getTCGAdisease(),
                               multiple = FALSE),
                selectizeInput('feature',
                               'Feature',
