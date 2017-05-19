@@ -1,8 +1,16 @@
 ---
 title: "One class model - 450K data"
-output: html_notebook
-author: Tathiane Maistro Malta
-editor_options: 
+author: "Tathiane Maistro Malta"
+output:
+  html_notebook:
+    highlight: tango
+    theme: journal
+    toc: yes
+    toc_float:
+      collapsed: no
+  html_document:
+    toc: yes
+editor_options:
   chunk_output_type: inline
 ---
 
@@ -28,8 +36,13 @@ library(gdata)
 ```{r}
 # load PCBC metadata (contains group info)
 load("pcbc.pd.f.Rda")
+pcbc.pd.f
+```
+
+```{r}
 # load PCBC 450K data (subset of 219 probes of interest)
 load("pcbc.data.Rda")
+pcbc.data
 ```
 
 ```{r echo = TRUE, message = FALSE, warning = FALSE}
@@ -78,15 +91,26 @@ for( i in 1:ncol(X.tr) ) {
   cat( "Average AUC: ", mean(auc), "\n" )
 }
 # 
+```
 
+```{r}
 ## Uses the signature to score PanCan33 data
 # load TCGA 450K data (subset of 219 probes of interest)
 load("data.pan.Rda") 
+data.pan
+```
+```{r}
+load("type.info.Rda") #(contains tumor type info)
+type.info
+```
+  
+```{r results = "hide", message = FALSE, warning = FALSE}
 # Function to replace NA values with median of probe values by tumor type
 source("replaceNA.R")
-load("type.info.Rda") #(contains tumor type info)
 testset <- replace.NA(data.pan, type.info, by="median") 
+```
 
+```{r echo = TRUE, message = FALSE, warning = FALSE}
 ## Load the signature
 load("pcbc-stemsig.p219.Rda")
 w <- mm$w
@@ -104,5 +128,3 @@ ss <- as.data.frame(t(ss))
 colnames(ss) <- "mDNAsi"   
 save(ss, file="TCGA_mDNAsi.Rda")
 ```
-
-
