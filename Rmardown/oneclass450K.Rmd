@@ -6,8 +6,18 @@ editor_options:
   chunk_output_type: inline
 ---
 
+# R packages
 
-```{r}
+## Install packages
+
+To install the required packages to run the code below please execute the follwing code.
+```{r eval = FALSE}
+deps <- c("gelnet","dplyr","gdata")
+for(pkg in deps)  if (!pkg %in% installed.packages()) install.packages(pkg, dependencies = TRUE)
+```
+
+## Loading required libraries
+```{r ,echo = TRUE, message = FALSE, warning = FALSE}
 library(gelnet)
 library(dplyr)
 library(gdata)
@@ -15,14 +25,14 @@ library(gdata)
 
 # Auxiliary files
 
-```{r, eval=FALSE}
+```{r}
 # load PCBC metadata (contains group info)
 load("pcbc.pd.f.Rda")
 # load PCBC 450K data (subset of 219 probes of interest)
 load("pcbc.data.Rda")
 ```
 
-```{r, eval=FALSE}
+```{r echo = TRUE, message = FALSE, warning = FALSE}
 ## Mean-center the data
 m <- apply(pcbc.data, 1, mean )
 pcbc.data.2 <- pcbc.data - m
