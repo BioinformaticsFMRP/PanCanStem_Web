@@ -1,0 +1,98 @@
+---
+title: "One class model - 450K data"
+output: html_notebook
+author: Tathiane Maistro Malta
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+```{r}
+library(gelnet)
+library(dplyr)
+library(gdata)
+```
+
+# Auxiliary files
+
+```{r, eval=FALSE}
+# load PCBC metadata (contains group info)
+load("pcbc.pd.f.Rda")
+# load PCBC 450K data (subset of 219 probes of interest)
+load("pcbc.data.Rda")
+```
+
+```{r, eval=FALSE}
+## Mean-center the data
+m <- apply(pcbc.data, 1, mean )
+pcbc.data.2 <- pcbc.data - m
+
+# Define PCBC groups (SC and non.SC)
+M1_smp <- pcbc.pd.f[pcbc.pd.f$Diffname_short %in% "SC",] #SC
+M2_smp <- pcbc.pd.f[!(pcbc.pd.f$Diffname_short %in% "SC"),] #non-SC
+
+# Select PCBC data
+X.tr <- pcbc.data.2[, as.character(M1_smp$UID)] # 44 samples
+X.bk <- pcbc.data.2[, as.character(M2_smp$UID)] # 55 samples
+
+
+## Train a one-class model
+mm <- gelnet( t(X.tr), NULL, 0, 1 ) #NULL for a one-class task 
+
+## Store the signature to a file
+save(mm, file = "pcbc-stemsig.p219.Rda")
+
+# Cross-validation with linear model:
+## Perform leave-one-out cross-validation
+auc <- c()
+for( i in 1:ncol(X.tr) ) {
+  ## Train a model on non-left-out data
+  X1 <- X.tr[,-i]
+  X1 <- as.matrix(X1)
+  K <- t(X1) %*% X1 / nrow(X1)
+  m1 <- gelnet.ker( K, NULL, lambda=1 )
+  w1 <- X1 %*% m1$v
+  
+  ## Score the left-out sample against the background
+  X.bk <- X.bk[rownames(X.tr),]
+  X.bk <- as.matrix(X.bk)
+  s.bk <- t(w1) %*% X.bk
+  s.bk <- unmatrix(s.bk)
+  
+  s1 <- t(w1) %*% X.tr[,i]
+  s1 <- unmatrix(s1)
+  
+  ## AUC = P( left-out sample is scored above the background )
+  auc[i] <- sum( s1 > s.bk ) / length(s.bk)
+  cat( "Current AUC: ", auc[i], "\n" )
+  cat( "Average AUC: ", mean(auc), "\n" )
+}
+# 
+
+## Uses the signature to score PanCan33 data
+# load TCGA 450K data (subset of 219 probes of interest)
+load("data.pan.Rda") 
+# Function to replace NA values with median of probe values by tumor type
+source("replaceNA.R")
+load("type.info.Rda") #(contains tumor type info)
+testset <- replace.NA(data.pan, type.info, by="median") 
+
+## Load the signature
+load("pcbc-stemsig.p219.Rda")
+w <- mm$w
+
+X <- testset[as.character(names(w)),]
+X <- as.matrix(X)
+
+## Score via linear model
+ss <- t(w) %*% X
+## Scale the scores to be between 0 and 1
+ss <- ss - min(ss)
+ss <- ss / max(ss)
+ss <- as.data.frame(t(ss))
+
+colnames(ss) <- "mDNAsi"   
+save(ss, file="TCGA_mDNAsi.Rda")
+```
+
+
