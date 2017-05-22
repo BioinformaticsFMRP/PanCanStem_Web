@@ -421,7 +421,7 @@ main.predict <- function( fnSig = "pcbc-stemsig.tsv", fnOut = "mRNA_StemScore.ts
 
 
 
-## Main Function 
+## Executing complete analysis
 
 Once you have created all of the previous function (`main.train`, `main.predict`), 
 create the `main` function which wraps the all them. 
