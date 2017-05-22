@@ -39,7 +39,7 @@ synapseLogin()
 
 ### Mapping ENSEMBL IDs to HUGO 
 
-[Ensembl](www.ensembl.org) is a gene browser that will be used to gather information on the gene type and geneid [@yates2015ensembl]. 
+[Ensembl](www.ensembl.org) is a gene browser that will be used to gather information on the gene type and GeneID [@yates2015ensembl]. 
 It can be accessed via R using the R/Bioconductor [biomaRt](http://bioconductor.org/packages/biomaRt/) package [@durinck2005biomart,@durinck2009mapping] 
 which provides functions to connect to the Ensembl website and select the dataset you want with to work with. 
 Using this package, we created the auxiliary function below to map human Ensemble gene IDs to HUGO Symbols.
@@ -77,7 +77,7 @@ Below we will explain each of its steps.
 
 First, we will access synapse to retrieve the information. 
 The function [synGet](https://www.rdocumentation.org/packages/synapseClient/versions/1.13-4/topics/synGet)
-will be used to load and save RNAseq data, while the funcion [synTableQuery](https://www.rdocumentation.org/packages/synapseClient/versions/1.13-4/topics/synTableQuery) is used to gather the meta data. 
+will be used to load and save RNA-seq data, while the function [synTableQuery](https://www.rdocumentation.org/packages/synapseClient/versions/1.13-4/topics/synTableQuery) is used to gather the meta data. 
 In this case the download location is set to '/data/PCBC' but it can be changed to 
 wherever you would like or it can be set to NULL and it will be stored in your cache.  
 
@@ -90,7 +90,7 @@ tibble::column_to_rownames( "tracking_id" ) %>% as.matrix
 X[1:3,1:3]
 ```
 
-Meta data: `Y` is a single variable data frame consting of 301 observations.   
+Meta data: `Y` is a single variable data frame consisting of 301 observations.   
 
 ```{r, eval = FALSE}
 # Retrieve metadata
@@ -118,11 +118,11 @@ rownames(X) <- v
 head(y)
 ```
 
-Call the `genes2hugo` function created before and use the labels from the RNSseq data to map genetype and geneid.
+Call the `genes2hugo` function created before and use the labels from the RNA-seq data to map Ensembl gene ID and to HUGO symbols.
 The result of this function is a data frame with two variables consisting of 12952 observations.
 
 ```{r, eval = FALSE}
-## Map Ensembl IDs to HUGO
+# Map Ensembl IDs to HUGO
 V <- genes2hugo( rownames(X) )
 head(V)
 ```
@@ -147,7 +147,7 @@ if(!is.null(fnGenes)){
 }
 ```
 
-Find the mean center by subtracting the mean of each gene (`m`) from the RNSseq data (`X`).
+Find the mean center by subtracting the mean of each gene (`m`) from the RNA-seq data (`X`).
 ```{r, eval = FALSE}
 m <- apply( X, 1, mean )
 X <- X - m
@@ -221,7 +221,7 @@ return(auc)
 ```
 
 
-### The continous `main.train` function
+### Entire code: `main.train` function
 
 ```{r, eval= FALSE}
 ## fnOut - filename of the output signature
@@ -322,7 +322,7 @@ w[1:10]
 
 Again, we retrieve data from synapse. For this specific data you will need NIH approval to get access. 
 Once you gather the data, create a data frame `X` and filter so that `X` contains genes 
-that mapped and values from the signiture gene set. 
+that mapped and values from the signature gene set. 
 `X` will be a large data frame with 11810 rows by 11070 columns.
 ```{r, eval = FALSE}
 s <- synGet( "syn4976369", downloadLocation = "/data/pancan" )
@@ -337,7 +337,7 @@ X <- read.delim( s@filePath, as.is=TRUE, check.names=FALSE ) %>%	## Read the raw
 X
 ```
 
-If the data for SLC35E2  havs multiple entries, we will filter it by and keep only the first one.
+If the data for SLC35E2 has multiple entries, we will filter it by and keep only the first one.
 
 ```{r, eval = FALSE}
 j <- grep( "SLC35E2", X[,1] )
@@ -345,7 +345,7 @@ if( length(j) > 1 ) X <- X[-j[-1],]
 ```
 
 Convert the data frame `X` to a matrix. Rows are Gene id's and columns are Gene Sets. 
-Notice the the size of this matirx is now 11809 rows by 11069 columns. 
+Notice the the size of this matrix is now 11809 rows by 11069 columns. 
 ```{r, eval = FALSE}
 rownames(X) <- NULL
 X <- X %>% tibble::column_to_rownames( "gene_id" ) %>% as.matrix()
@@ -359,7 +359,7 @@ w <- w[ rownames(X) ]
 w[1:5]
 ```
 
-Score the Matrix `X` using Spearman coorelation. 
+Score the Matrix `X` using Spearman correlation. 
 ```{r, eval = FALSE}
 s <- apply( X, 2, function(z) {cor( z, w, method="sp", use="complete.obs" )} )
 s[1:5]
@@ -377,7 +377,7 @@ Then output scores to a file mRNA_StemScore.tsv.
 write.table( cbind(s), file=fnOut, sep="\t", quote=FALSE, col.names=FALSE )
 ```
 
-### The continous `main.predict` function 
+### Entire code: `main.predict` function 
 ```{r, eval = FALSE}
 ## Uses the signature stored in fnSig to score PanCan33 data and stores the result to fnOut
 main.predict <- function( fnSig = "pcbc-stemsig.tsv", fnOut = "mRNA_StemScore.tsv" )
@@ -424,7 +424,7 @@ main.predict <- function( fnSig = "pcbc-stemsig.tsv", fnOut = "mRNA_StemScore.ts
 ## Main Function 
 
 Once you have created all of the previous function (`main.train`, `main.predict`), 
-create the `main` function which wrapes the all them. 
+create the `main` function which wraps the all them. 
 This function will train and apply the full and reduced signatures. 
 After you have have created all functions, run the `main` function to preform the full analysis. 
 
