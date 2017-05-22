@@ -1,17 +1,30 @@
 ---
-title:  One Class model -- 450k data
-author: Tathimalta
-output: html_document 
+title: "One class model - 450K data"
+author: "Tathiane Maistro Malta"
+output:
+  html_notebook:
+    highlight: tango
+    theme: journal
+    toc: yes
+    toc_float:
+      collapsed: no
+  html_document:
+    toc: yes
+editor_options:
+  chunk_output_type: inline
+bibliography: bibliography.bib
 ---
 ***
 # Purpose 
 
 ***
-# Inroducntion 
+# Introduction 
 
 # Setup 
+
 Begin by downloading and opening the following packages into your library.
-The gelnet library will be used to train the model, dplyr and gdata are used for data manipulation.
+The [gelnet](https://cran.r-project.org/web/packages/gelnet/index.html) library will be used to train the model, 
+[dplyr](https://cran.r-project.org/web/packages/dplyr/index.html) and [gdata](https://cran.r-project.org/web/packages/gdata/index.html) are used for data manipulation.
 ```{r}
 library(gelnet)
 library(dplyr)
@@ -19,11 +32,15 @@ library(gdata)
 ```
 
 # Data 
+
 The the pcbc data is organized in a data frame with 99 samples as columns and 219 methylation probes as rows.
 ```{r}
-head(pcbc.data)
+load("pcbc.data.Rda")
+pcbc.data
 ```
+
 ```{r}
+load("pcbc.pd.f.Rda")
 head(pcbc.pd.f)
 ```
 
@@ -31,18 +48,19 @@ head(pcbc.pd.f)
 Then find the mean center by subtracting the mean of each probe from the entire pcbc data. 
 The mean of each probe just be in a numeric vector the same size as the number of probes, in this case 219.
 ```{r}
-m <- apply(pcbc.data, 1, mean )
-m[1:10]
+m <- apply(pcbc.data, 1, mean)
+m[1:5]
 ```
 ```{r}
 pcbc.data.2 <- pcbc.data - m
-head(pcbc.data.2)
+pcbc.data.2
 ```
 
 
 Identify stem cells and break up all samples into 2 groups:
-*Stem cell 'X.tr'
-*not stem cell 'X.bk'
+
+* Stem cell ('X.tr' object)
+* not stem cell ('X.bk' object)
 
 ```{r}
 # Define PCBC groups (SC and non.SC)
@@ -54,47 +72,53 @@ X.tr <- pcbc.data.2[, as.character(M1_smp$UID)] # 44 samples
 X.bk <- pcbc.data.2[, as.character(M2_smp$UID)] # 55 samples
 ```
 
+Now we can begin to train the the one-class model with the [gelnet](https://www.rdocumentation.org/packages/gelnet/versions/1.2.1/topics/gelnet) function. 
+The gelnet function can be used for Linear Regression, 
+Binary Classification and One class Problems by using an iterative method called 
+coordinated descent [@sokolov2016pathway].
 
-Now we can begin to train the the one-class model with the [gelnet] (https://www.rdocumentation.org/packages/gelnet/versions/1.2.1/topics/gelnet) function. 
-The gelnet function can be used for Linear Regression, Binary Classification and One class Problems by using an iterative method called coordinated descent.
-
+```{r, eval=FALSE}
 gelnet(X, y, l1, l2)
-X: n by p matrix => transpose('X.r')
-y: 'NULL' for one class models 
-l1: coefficient for the L1-norm penalty => '0' 
-l2: coefficient for the L2-norm penalty => '1'
+```
+
+It has four main arguments described below:
+
+* **X**: n by p matrix => transpose('X.r')
+* **y**: 'NULL' for one class models 
+* **l1**: coefficient for the L1-norm penalty => '0' 
+* **l2**: coefficient for the L2-norm penalty => '1'
 
 Make sure you transpose the matrix so that the genes are listed as rows and samples as columns.
 Then store the results as a tsv file (pcbc-stemsig.p219.rda). 
 ```{r}
 ## Train a one-class model
-mm <- gelnet( t(X.tr), NULL, 0, 1 ) #NULL for a one-class task 
+mm <- gelnet(t(X.tr), NULL, 0, 1) #NULL for a one-class task 
 
 ## Store the signature to a file
-save( mm, file="pcbc-stemsig.p219.Rda")
-
+save( mm, file = "pcbc-stemsig.p219.Rda")
 ```
 
 
 
 # Leave One Out Cross-Validation 
+
 To test how the model's performance by using leave one out cross-validation. 
-This process has three steps 
-1.Train model on non-left-out data
-2.Score the left-out sample against the background
-3.AUC = P( left-out sample is scored above the background )
+This process has three steps: 
+
+1. Train model on non-left-out data
+2. Score the left-out sample against the background
+3. AUC = P( left-out sample is scored above the background )
 
 ```{r, results="hide"}
 # Cross-validation with linear model:
-## Perform leave-one-out cross-validation
+# Perform leave-one-out cross-validation
 auc <- c()
-for( i in 1:ncol(X.tr) )
-{
+for(i in 1:ncol(X.tr)) {
   ## Train a model on non-left-out data
   X1 <- X.tr[,-i]
   X1 <- as.matrix(X1)
   K <- t(X1) %*% X1 / nrow(X1)
-  m1 <- gelnet.ker( K, NULL, lambda=1 )
+  m1 <- gelnet.ker(K, NULL, lambda = 1)
   w1 <- X1 %*% m1$v
   
   ## Score the left-out sample against the background
@@ -107,7 +131,7 @@ for( i in 1:ncol(X.tr) )
   s1 <- unmatrix(s1)
   
   ## AUC = P( left-out sample is scored above the background )
-  auc[i] <- sum( s1 > s.bk ) / length(s.bk)
+  auc[i] <- sum(s1 > s.bk) / length(s.bk)
   cat( "Current AUC: ", auc[i], "\n" )
   cat( "Average AUC: ", mean(auc), "\n" )
 }
@@ -116,19 +140,23 @@ for( i in 1:ncol(X.tr) )
 
 If the validation is successful you will notice that the 'auc' variable will be a numeric vector consisting of only 1's.  
 ```{r}
-  print(s1)
+print(s1)
 ```
 ```{r}
-auc[1:10]
+head(auc)
+all(auc == 1)
 ```
 
 # Replace NA fucntion 
 
-The Replace NA function is used to replace any values that are NA (not available) and replace them with the mean value of the probe. 
+The Replace NA function is used to replace any values that are NA (not available) 
+with  either the mean or the median value of the probe for a give group. 
+
 1. check for NA values
 2. locate the NA values 
-3. calculate the mean for the probe where each NA is found 
+3. calculate the mean or median for the probe where each NA is found 
 4. replace the values
+
 ```{r, message = FALSE, error = FALSE}
 replace.NA <-function(data,type.info,by = "mean"){
   if(!"group" %in% colnames(type.info)) stop("type.info must have group column")
@@ -181,15 +209,23 @@ replace.NA <-function(data,type.info,by = "mean"){
 }
 ```
 
-
-
 # Score PanCan33 Data 
+
 Use the signature that was created and stored as 'pcbc-stemsig.p219.rda' to now score PanCan33 data. 
 First load the data 'data.pan'
 Replace empty values with the median probe values.
 
 ```{r}
-
+## Uses the signature to score PanCan33 data
+# load TCGA 450K data (subset of 219 probes of interest)
+load("data.pan.Rda") 
+data.pan
+```
+```{r}
+load("type.info.Rda") #(contains tumor type info)
+type.info
+```
+```{r}
 testset <- replace.NA(data.pan, type.info, by="median") 
 head(testset)
 ```
@@ -233,14 +269,19 @@ head(ss)
 
 Save scores to a Rda file.
 ```{r}
-save(ss, file="TCGA_mDNAsi.Rda")
+save(ss, file = "TCGA_mDNAsi.Rda")
 ```
 
-
 # Continuous Code 
-```{r,eval=FALSE}
+
+```{r,eval = FALSE}
 # One class model - 450K data
 # Files located @ https://drive.google.com/drive/folders/0BybEcxkBv6VqcmJ0QlA3bVJhc0E?usp=sharing
+
+# Load required libraries
+library(gelnet)
+library(dplyr)
+library(gdata)
 
 # load PCBC metadata (contains group info)
 load("pcbc.pd.f.Rda")
@@ -259,13 +300,11 @@ M2_smp <- pcbc.pd.f[!(pcbc.pd.f$Diffname_short %in% "SC"),] #non-SC
 X.tr <- pcbc.data.2[, as.character(M1_smp$UID)] # 44 samples
 X.bk <- pcbc.data.2[, as.character(M2_smp$UID)] # 55 samples
 
-library( gelnet )
-library( dplyr )
 ## Train a one-class model
-mm <- gelnet( t(X.tr), NULL, 0, 1 ) #NULL for a one-class task 
+mm <- gelnet(t(X.tr), NULL, 0, 1) # NULL for a one-class task 
 
 ## Store the signature to a file
-save( mm, file="pcbc-stemsig.p219.Rda")
+save( mm, file = "pcbc-stemsig.p219.Rda")
 
 # Cross-validation with linear model:
 ## Perform leave-one-out cross-validation
@@ -276,25 +315,23 @@ for( i in 1:ncol(X.tr) )
   X1 <- X.tr[,-i]
   X1 <- as.matrix(X1)
   K <- t(X1) %*% X1 / nrow(X1)
-  m1 <- gelnet.ker( K, NULL, lambda=1 )
+  m1 <- gelnet.ker(K, NULL, lambda = 1)
   w1 <- X1 %*% m1$v
   
   ## Score the left-out sample against the background
   X.bk <- X.bk[rownames(X.tr),]
   X.bk <- as.matrix(X.bk)
   s.bk <- t(w1) %*% X.bk
-  library(gdata)
   s.bk <- unmatrix(s.bk)
   
   s1 <- t(w1) %*% X.tr[,i]
   s1 <- unmatrix(s1)
   
   ## AUC = P( left-out sample is scored above the background )
-  auc[i] <- sum( s1 > s.bk ) / length(s.bk)
+  auc[i] <- sum(s1 > s.bk) / length(s.bk)
   cat( "Current AUC: ", auc[i], "\n" )
   cat( "Average AUC: ", mean(auc), "\n" )
 }
-# 
 
 ## Uses the signature to score PanCan33 data
 # load TCGA 450K data (subset of 219 probes of interest)
@@ -302,7 +339,7 @@ load("data.pan.Rda")
 # Function to replace NA values with median of probe values by tumor type
 source("replaceNA.R")
 load("type.info.Rda") #(contains tumor type info)
-testset <- replace.NA(data.pan, type.info, by="median") 
+testset <- replace.NA(data.pan, type.info, by = "median") 
 
 ## Load the signature
 load("pcbc-stemsig.p219.Rda")
@@ -319,8 +356,7 @@ ss <- ss / max(ss)
 ss <- as.data.frame(t(ss))
 
 colnames(ss) <- "mDNAsi"   
-save(ss, file="TCGA_mDNAsi.Rda")
-
+save(ss, file = "TCGA_mDNAsi.Rda")
 ```
 
 
