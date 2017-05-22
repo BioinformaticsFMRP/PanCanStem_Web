@@ -177,7 +177,7 @@ Identify stem cells and break up all samples into 2 groups:
 
 
 Now we can begin to train the the one-class model with the gelnet function using the PCBC stem cell data. 
-The [gelnet] (https://www.rdocumentation.org/packages/gelnet/versions/1.2.1/topics/gelnet) function can be used for Linear Regression, Binary Classification and One class Problems by using an iterative method called coordinanted descent.
+The [gelnet](https://www.rdocumentation.org/packages/gelnet/versions/1.2.1/topics/gelnet) function can be used for Linear Regression, Binary Classification and One class Problems by using an iterative method called coordinanted descent.
 
 gelnet(X, y, l1, l2)
 X: n by p matrix => transpose( 'X.r' )
@@ -304,7 +304,7 @@ main.train <- function( fnOut = "pcbc-stemsig.tsv", fnGenes = NULL )
 
 # Predict function
 
-Use [read.delium] (http://rfunction.com/archives/1441) to load the signiture from the svaed file(pcbc-stemsig.tsv) and store it as a variable w. 
+Use [read.delium](http://rfunction.com/archives/1441) to load the signiture from the svaed file(pcbc-stemsig.tsv) and store it as a variable w. 
 w is a numeric vector the same size as the number of selected genes, in this case 12952.
 ```{r}
   fnSig = "pcbc-stemsig.tsv"
