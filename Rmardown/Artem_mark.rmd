@@ -25,7 +25,7 @@ synapseLogin()
 
 
 
-# genes2hugo function
+# genes2hugo 
 Ensembl is a gene browser that will be used to gather information on the gene type and geneid. [ensembl](www.ensembl.org)
 useMArt is the function used connect to the Ensembl website and select the dataset you with to work with. 
 Use the getBM function to retrieve the the data for the SRC gene from ensembl.
@@ -79,7 +79,7 @@ genes2hugo <- function( v, srcType = "ensembl_gene_id" )
 ```
 
 
-# Train function 
+# Train
 
 Here is where synapse will be used to retrieve the information. 
 [synGet](https://www.rdocumentation.org/packages/synapseClient/versions/1.13-4/topics/synGet)  will be used to load and save RNAseq data.
@@ -302,7 +302,7 @@ main.train <- function( fnOut = "pcbc-stemsig.tsv", fnGenes = NULL )
 ```
 
 
-# Predict function
+# Predict
 
 Use [read.delium](http://rfunction.com/archives/1441) to load the signiture from the svaed file(pcbc-stemsig.tsv) and store it as a variable w. 
 w is a numeric vector the same size as the number of selected genes, in this case 12952.
