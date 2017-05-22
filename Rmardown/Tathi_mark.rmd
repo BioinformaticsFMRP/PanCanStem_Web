@@ -79,6 +79,9 @@ X.tr <- pcbc.data.2[, as.character(M1_smp$UID)] # 44 samples
 X.bk <- pcbc.data.2[, as.character(M2_smp$UID)] # 55 samples
 ```
 
+# Methods 
+
+## Train 
 Now we can begin to train the the one-class model with the [gelnet](https://www.rdocumentation.org/packages/gelnet/versions/1.2.1/topics/gelnet) function. 
 The gelnet function can be used for Linear Regression, 
 Binary Classification and One class Problems by using an iterative method called 
@@ -105,7 +108,7 @@ mm <- gelnet(t(X.tr), NULL, 0, 1) #NULL for a one-class task
 save( mm, file = "pcbc-stemsig.p219.Rda")
 ```
 
-# Leave One Out Cross-Validation 
+## Leave One Out Cross-Validation 
 
 To test how the model's performance by using leave one out cross-validation. 
 This process has three steps: 
@@ -152,7 +155,7 @@ head(auc)
 all(auc == 1)
 ```
 
-# Replace missing values in DNA methylation matrix
+## Replace missing values in DNA methylation matrix
 
 The `replace.NA` function is used to replace any values that are NA (not available) 
 with either the mean or the median value of the probe for a given group. 
@@ -215,7 +218,7 @@ replace.NA <-function(data,type.info,by = "mean"){
 }
 ```
 
-# Score PanCan33 Data 
+## Score PanCan33 Data 
 
 Use the signature that was created and stored as 'pcbc-stemsig.p219.rda' to now score PanCan33 data. 
 First load the data data.pan
