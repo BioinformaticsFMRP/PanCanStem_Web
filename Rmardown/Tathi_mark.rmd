@@ -23,9 +23,19 @@ bibliography: bibliography.bib
 
 # Setup 
 
+
+## Install packages
+
+To install the required packages to run the code below please execute the follwing code.
+```{r eval = FALSE}
+deps <- c("gelnet","dplyr","gdata")
+for(pkg in deps)  if (!pkg %in% installed.packages()) install.packages(pkg, dependencies = TRUE)
+```
+
 Begin by downloading and opening the following packages into your library.
 The [gelnet](https://cran.r-project.org/web/packages/gelnet/index.html) library will be used to train the model, 
 [dplyr](https://cran.r-project.org/web/packages/dplyr/index.html) and [gdata](https://cran.r-project.org/web/packages/gdata/index.html) are used for data manipulation.
+
 ```{r}
 library(gelnet)
 library(dplyr)
