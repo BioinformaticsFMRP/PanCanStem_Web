@@ -7,7 +7,7 @@ output: html_document
 # Purpose 
 
 ***
-# Inroducntion 
+# Inroduction 
 
 # Setup 
 Begin by downloading and opening the following packages into your library.
