@@ -122,7 +122,7 @@ If the validation is successful you will notice that the 'auc' variable will be 
   auc[1:10]
 ```
 
-# Replace NA fucntion 
+# Replace NA 
 
 The Replace NA function is used to replace any values that are NA (not available) and replace them with the mean value of the probe. 
 1. check for NA values
