@@ -41,8 +41,8 @@ head(pcbc.data.2)
 
 
 Identify stem cells and break up all samples into 2 groups:
-*Stem cell 'X.tr'
-*not stem cell 'X.bk'
+*Stem cell X.tr
+*not stem cell X.bk
 
 ```{r}
 # Define PCBC groups (SC and non.SC)
@@ -59,10 +59,10 @@ Now we can begin to train the the one-class model with the [gelnet](https://www.
 The gelnet function can be used for Linear Regression, Binary Classification and One class Problems by using an iterative method called coordinated descent.
 
 gelnet(X, y, l1, l2)  
-X: n by p matrix => transpose('X.r')  
+X: n by p matrix => transpose(X.r)  
 y: 'NULL' for one class models   
-l1: coefficient for the L1-norm penalty => '0'  
-l2: coefficient for the L2-norm penalty => '1'  
+l1: coefficient for the L1-norm penalty => 0   
+l2: coefficient for the L2-norm penalty => 1    
 
 Make sure you transpose the matrix so that the genes are listed as rows and samples as columns.
 Then store the results as a tsv file (pcbc-stemsig.p219.rda). 
@@ -78,7 +78,7 @@ save( mm, file="pcbc-stemsig.p219.Rda")
 
 
 # Leave One Out Cross-Validation 
-To test how the model's performance by using leave one out cross-validation. 
+To test how the model's performance by using leave one out cross-validation.   
 This process has three steps 
 1.Train model on non-left-out data
 2.Score the left-out sample against the background
@@ -114,7 +114,7 @@ for( i in 1:ncol(X.tr) )
 ```
 
 
-If the validation is successful you will notice that the 'auc' variable will be a numeric vector consisting of only 1's.  
+If the validation is successful you will notice that the auc variable will be a numeric vector consisting of only 1's.  
 ```{r}
   print(s1)
 ```
@@ -185,7 +185,7 @@ replace.NA <-function(data,type.info,by = "mean"){
 
 # Score PanCan33 Data 
 Use the signature that was created and stored as 'pcbc-stemsig.p219.rda' to now score PanCan33 data. 
-First load the data 'data.pan'
+First load the data data.pan
 Replace empty values with the median probe values.
 
 ```{r}
@@ -195,7 +195,7 @@ head(testset)
 ```
 
 
-Load the signature 'w' which should be a numeric row vector the size of the probes of interest. 
+Load the signature w which should be a numeric row vector the size of the probes of interest. 
 ```{r}
 load("pcbc-stemsig.p219.Rda")
 w <- mm$w
@@ -208,14 +208,14 @@ X <- testset[as.character(names(w)),]
 head(X)
 ```
 
-Convert 'X' into a matrix
+Convert X into a matrix
 ```{r}
 X <- as.matrix(X)
 X[1:3,1:3]
 ```
 
 
-Score via linear model. The resulting variable 'ss' will be row vector 9627 in length 
+Score via linear model. The resulting variable ss will be row vector 9627 in length 
 ```{r}
 ss <- t(w) %*% X
 ss[1,1:5]
