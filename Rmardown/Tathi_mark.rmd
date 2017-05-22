@@ -14,17 +14,13 @@ editor_options:
   chunk_output_type: inline
 bibliography: bibliography.bib
 ---
-***
-# Purpose 
-
-***
 
 # Introduction 
 
-# Setup 
+## Setup 
 
-
-## Install packages
+The R package [gelnet](https://cran.r-project.org/web/packages/gelnet/index.html) will be used to train the model, 
+[dplyr](https://cran.r-project.org/web/packages/dplyr/index.html) and [gdata](https://cran.r-project.org/web/packages/gdata/index.html)  will be used for data manipulation.
 
 To install the required packages to run the code below please execute the follwing code.
 ```{r eval = FALSE}
@@ -32,9 +28,7 @@ deps <- c("gelnet","dplyr","gdata")
 for(pkg in deps)  if (!pkg %in% installed.packages()) install.packages(pkg, dependencies = TRUE)
 ```
 
-Begin by downloading and opening the following packages into your library.
-The [gelnet](https://cran.r-project.org/web/packages/gelnet/index.html) library will be used to train the model, 
-[dplyr](https://cran.r-project.org/web/packages/dplyr/index.html) and [gdata](https://cran.r-project.org/web/packages/gdata/index.html) are used for data manipulation.
+Then load them:
 
 ```{r}
 library(gelnet)
@@ -109,8 +103,6 @@ mm <- gelnet(t(X.tr), NULL, 0, 1) #NULL for a one-class task
 save( mm, file = "pcbc-stemsig.p219.Rda")
 ```
 
-
-
 # Leave One Out Cross-Validation 
 
 To test how the model's performance by using leave one out cross-validation. 
@@ -158,11 +150,12 @@ head(auc)
 all(auc == 1)
 ```
 
-# Replace NA 
+# Replace missing values in DNA methylation matrix
 
-The Replace NA function is used to replace any values that are NA (not available) 
-with  either the mean or the median value of the probe for a give group. 
+The `replace.NA` function is used to replace any values that are NA (not available) 
+with either the mean or the median value of the probe for a given group. 
 
+For each group it will do the following steps: 
 1. check for NA values
 2. locate the NA values 
 3. calculate the mean or median for the probe where each NA is found 
@@ -236,9 +229,11 @@ data.pan
 load("type.info.Rda") #(contains tumor type info)
 type.info
 ```
-```{r}
+```{r results = "hide", message = FALSE, warning = FALSE}
 testset <- replace.NA(data.pan, type.info, by="median") 
-head(testset)
+```
+```{r}
+testset
 ```
 
 
@@ -246,7 +241,7 @@ Load the signature w which should be a numeric row vector the size of the probes
 ```{r}
 load("pcbc-stemsig.p219.Rda")
 w <- mm$w
-w[1:10]
+w[1:5]
 ```
 
 
@@ -258,17 +253,16 @@ head(X)
 Convert X into a matrix
 ```{r}
 X <- as.matrix(X)
-X[1:3,1:3]
 ```
 
 
 Score via linear model. The resulting variable ss will be row vector 9627 in length 
 ```{r}
 ss <- t(w) %*% X
-ss[1,1:5]
+ss
 ```
 
-Scale the svores into a ratio from 0 to 1. and store as data frame. 
+Scale the scores into a ratio from 0 to 1 and store as data frame. 
 ```{r}
 ## Scale the scores to be between 0 and 1
 ss <- ss - min(ss)
