@@ -119,7 +119,7 @@ If the validation is successful you will notice that the 'auc' variable will be 
   print(s1)
 ```
 ```{r}
-auc[1:10]
+  auc[1:10]
 ```
 
 # Replace NA fucntion 
