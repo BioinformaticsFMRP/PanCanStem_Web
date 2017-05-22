@@ -6,6 +6,7 @@ output:
     highlight: tango
     theme: journal
     toc: yes
+    toc_depth: 2
     toc_float:
       collapsed: no
   html_document:
@@ -18,6 +19,8 @@ bibliography: bibliography.bib
 TBD by Artem
 
 # Setup 
+
+## R packages
 
 Make sure you have the following packages downloaded and loaded into your library. 
 For R synapse client please check this [article](http://docs.synapse.org/articles/getting_started.html).
@@ -32,14 +35,17 @@ library(synapseClient)
 synapseLogin()
 ```
 
-# Methods
+## Auxiliary functions
 
-## Mapping ENSEMBL IDs to HUGO 
+### Mapping ENSEMBL IDs to HUGO 
 
 [Ensembl](www.ensembl.org) is a gene browser that will be used to gather information on the gene type and geneid [@yates2015ensembl]. 
 It can be accessed via R using the R/Bioconductor [biomaRt](http://bioconductor.org/packages/biomaRt/) package [@durinck2005biomart,@durinck2009mapping] 
 which provides functions to connect to the Ensembl website and select the dataset you want with to work with. 
 Using this package, we created the auxiliary function below to map human Ensemble gene IDs to HUGO Symbols.
+
+# Methods
+
 
 ```{r, eval = FALSE}
 # Maps ENSEMBL IDs to HUGO
@@ -65,7 +71,11 @@ genes2hugo <- function( v, srcType = "ensembl_gene_id" )
 
 ## Train
 
-Here is where synapse will be used to retrieve the information. 
+In order to create our machine learning model, which will be used to make predictions on new data,
+we will create a function called `main.train` (see complete code in the end of the section). 
+Below we will explain each of its steps.
+
+First, we will access synapse to retrieve the information. 
 The function [synGet](https://www.rdocumentation.org/packages/synapseClient/versions/1.13-4/topics/synGet)
 will be used to load and save RNAseq data, while the funcion [synTableQuery](https://www.rdocumentation.org/packages/synapseClient/versions/1.13-4/topics/synTableQuery) is used to gather the meta data. 
 In this case the download location is set to '/data/PCBC' but it can be changed to 
@@ -295,9 +305,13 @@ main.train <- function( fnOut = "pcbc-stemsig.tsv", fnGenes = NULL )
 
 ## Predict
 
-Use [read.delim](http://rfunction.com/archives/1441) to load the signiture from the saved 
-file(pcbc-stemsig.tsv) and store it as a variable `w`. 
+In order to predict the classes to which unseen samples belong we will create a function called
+`main.predict` (see complete code in the end of the section). Below we will explain each of its steps.
+
+We start by using the [read.delim](http://rfunction.com/archives/1441) function 
+to read the signature from the saved file (pcbc-stemsig.tsv) and store it as a variable `w`. 
 `w` is a numeric vector the same size as the number of selected genes, in this case 12952.
+
 ```{r, eval = FALSE}
 fnSig = "pcbc-stemsig.tsv"
 w <- read.delim(fnSig, header = FALSE, row.names = 1 ) %>% as.matrix() %>% drop()
@@ -306,19 +320,16 @@ w <- read.delim(fnSig, header = FALSE, row.names = 1 ) %>% as.matrix() %>% drop(
 w[1:10]
 ```
 
-Create a fucntion `f` that will be used in the next steps to ..
-```{r, eval = FALSE}
-## Reduces HUGO|POSITION gene IDs to just HUGO
-f <- function( v ) unlist( lapply( strsplit( v, "\\|" ), "[[", 1 ) )
-```
-
-
 Again, we retrieve data from synapse. For this specific data you will need NIH approval to get access. 
 Once you gather the data, create a data frame `X` and filter so that `X` contains genes 
 that mapped and values from the signiture gene set. 
 `X` will be a large data frame with 11810 rows by 11070 columns.
 ```{r, eval = FALSE}
 s <- synGet( "syn4976369", downloadLocation = "/data/pancan" )
+
+# Auxiliary function: Reduces HUGO|POSITION gene IDs to just HUGO
+f <- function( v ) unlist( lapply( strsplit( v, "\\|" ), "[[", 1 ) )
+
 X <- read.delim( s@filePath, as.is=TRUE, check.names=FALSE ) %>%	## Read the raw values
      filter( !grepl( "\\?", gene_id ) ) %>%		## Drop genes with no mapping to HUGO
      mutate( gene_id = f( gene_id ) ) %>%		## Clip gene ids to HUGO
@@ -326,7 +337,8 @@ X <- read.delim( s@filePath, as.is=TRUE, check.names=FALSE ) %>%	## Read the raw
 X
 ```
 
-The data for SLC35E2 will have multiple gene id's. Filter it by only keeping the first entry.
+If the data for SLC35E2  havs multiple entries, we will filter it by and keep only the first one.
+
 ```{r, eval = FALSE}
 j <- grep( "SLC35E2", X[,1] )
 if( length(j) > 1 ) X <- X[-j[-1],]
@@ -346,7 +358,6 @@ stopifnot( all( rownames(X) %in% names(w) ) )
 w <- w[ rownames(X) ]
 w[1:5]
 ```
-
 
 Score the Matrix `X` using Spearman coorelation. 
 ```{r, eval = FALSE}
