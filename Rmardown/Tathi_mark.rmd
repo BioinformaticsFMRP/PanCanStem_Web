@@ -282,6 +282,9 @@ Save scores to a Rda file.
 save(ss, file = "TCGA_mDNAsi.Rda")
 ```
 
+# Conclusion
+TBD by Tathi
+
 # Continuous Code 
 
 ```{r,eval = FALSE}
@@ -368,9 +371,6 @@ ss <- as.data.frame(t(ss))
 colnames(ss) <- "mDNAsi"   
 save(ss, file = "TCGA_mDNAsi.Rda")
 ```
-
-# Conclusion
-TBD by Tathi
 # Session information
 
 ```{r}
