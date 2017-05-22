@@ -85,6 +85,8 @@ Data: `X` is a large matrix 13189 genes by 229 cell samples.
 ```{r, eval = FALSE}
 # Load RNAseq data
 synRNA <- synGet( "syn2701943", downloadLocation = "/data/PCBC" )
+```
+```{r}
 X <- read.delim( synRNA@filePath ) %>%
 tibble::column_to_rownames( "tracking_id" ) %>% as.matrix
 X[1:3,1:3]
@@ -92,17 +94,17 @@ X[1:3,1:3]
 
 Meta data: `Y` is a single variable data frame consisting of 301 observations.   
 
-```{r, eval = FALSE}
+```{r}
 # Retrieve metadata
 synMeta <- synTableQuery( "SELECT UID, Diffname_short FROM syn3156503" )
 Y <- synMeta@values %>%
   mutate( UID = gsub("-", ".", UID) ) %>%
   tibble::column_to_rownames( "UID" )
-head(Y)
+Y
 ```
 
 Filter the labels from the meta data. Notice the change in format for y 
-```{r, eval = FALSE}
+```{r}
 # Retrieve the labels from the metadata
 y <- Y[colnames(X),]
 
@@ -121,7 +123,7 @@ head(y)
 Call the `genes2hugo` function created before and use the labels from the RNA-seq data to map Ensembl gene ID and to HUGO symbols.
 The result of this function is a data frame with two variables consisting of 12952 observations.
 
-```{r, eval = FALSE}
+```{r}
 # Map Ensembl IDs to HUGO
 V <- genes2hugo( rownames(X) )
 head(V)
@@ -129,17 +131,14 @@ head(V)
 
 Now change the row names of `X` from the gene name to the hgnc (HUGO Gene Nomenclature Committee) symbol. 
 Notice that the dimensions of `X` change from 13189 rows to 12952 rows.
-```{r, eval = FALSE}
+```{r}
 X <- X[V[,1],]
 rownames(X) <- V[,2]
 X[1:3,1:3]
 ```
-```{r, eval = FALSE}
-dim(X)
-```
 
 Reduce gene set to the provides list.
-```{r,eval= FALSE}
+```{r, eval = FALSE}
 if(!is.null(fnGenes)){
   vGenes <- read.delim( fnGenes, header=FALSE ) %>% as.matrix() %>% drop()
   VE <- genes2hugo( vGenes, "entrezgene" )
@@ -148,7 +147,7 @@ if(!is.null(fnGenes)){
 ```
 
 Find the mean center by subtracting the mean of each gene (`m`) from the RNA-seq data (`X`).
-```{r, eval = FALSE}
+```{r}
 m <- apply( X, 1, mean )
 X <- X - m
 X[1:3,1:3]
@@ -159,12 +158,12 @@ Identify stem cells and break up all samples into 2 groups:
 * Stem cell(X.tr) -- 78 samples 
 * not stem cell (X.bk) -- 151 samples 
 
-```{r, eval = FALSE}
+```{r}
 j <- which( y == "SC" )
 X.tr <- X[,j]
 X.tr[1:3,1:3]
 ```
-```{r, eval = FALSE}
+```{r}
 X.bk <- X[,-j]
 X.bk[1:3,1:3]
 ```
@@ -187,10 +186,10 @@ It has four main arguments described below:
 
 Make sure you transpose the matrix so that the genes are listed as rows and samples as columns.
 Then store the results as a tsv file (pcbc-stemsig.tsv). 
-```{r, error= FALSE}
+```{r, eval=F}
 mm <- gelnet( t(X.tr), NULL, 0, 1 )
 ```
-```{r, eval= FALSE}
+```{r, eval = FALSE}
 write.table(mm$w, file = fnOut, sep = "\t", quote = FALSE, col.names = FALSE)
 ```
 
@@ -199,7 +198,7 @@ Leave-one-out cross validation will be used to test the accuracy of the model.
 Running this chunk will return a numeric vector containing the same size as the 
 number of samples of the X.tr variable (in this case 78). If it is successful the returned values should all be equal to 1.
 
-```{r, eval = FALSE }
+```{r, eval = F}
 ## Perform leave-one-out cross-validation
 auc <- c()
 for(i in 1:ncol(X.tr)){
@@ -216,8 +215,6 @@ for(i in 1:ncol(X.tr)){
   cat( "Current AUC: ", auc[i], "\n" )
   cat( "Average AUC: ", mean(auc), "\n" )
 }
-
-return(auc)
 ```
 
 
@@ -312,11 +309,11 @@ We start by using the [read.delim](http://rfunction.com/archives/1441) function
 to read the signature from the saved file (pcbc-stemsig.tsv) and store it as a variable `w`. 
 `w` is a numeric vector the same size as the number of selected genes, in this case 12952.
 
-```{r, eval = FALSE}
+```{r eval=FALSE}
 fnSig = "pcbc-stemsig.tsv"
 w <- read.delim(fnSig, header = FALSE, row.names = 1 ) %>% as.matrix() %>% drop()
 ```
-```{r, eval = FALSE}
+```{r eval=FALSE}
 w[1:10]
 ```
 
@@ -353,7 +350,7 @@ X[1:3,1:3]
 ```
 
 Reduce the signature to the common set of genes.
-```{r}
+```{r,eval = FALSE}
 stopifnot( all( rownames(X) %in% names(w) ) )
 w <- w[ rownames(X) ]
 w[1:5]
