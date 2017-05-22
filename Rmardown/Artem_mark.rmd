@@ -53,7 +53,7 @@ Filter out empty data
   ID
 ```
 
-##Continuous genes2hugo Function
+## Continuous genes2hugo Function
 ```{r, error = FALSE, }
 ## Maps ENSEMBL IDs to HUGO
 ## Use srcType = "ensembl_gene_id" for Ensembl IDs
@@ -79,7 +79,7 @@ genes2hugo <- function( v, srcType = "ensembl_gene_id" )
 ```
 
 
-#Train function 
+# Train function 
 
 Here is where synapse will be used to retrieve the information. 
 [synGet](https://www.rdocumentation.org/packages/synapseClient/versions/1.13-4/topics/synGet)  will be used to load and save RNAseq data.
@@ -221,7 +221,7 @@ Leave-one-out cross validation will be used to test the accuracy of the model. R
 ```
 
 
-##The continous main.train Function
+## The continous main.train Function
 ```{r, eval= FALSE}
 ## fnOut - filename of the output signature
 ## fnGenes - [optional] filename of the list of entrez ID to consider
