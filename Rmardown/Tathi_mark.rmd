@@ -16,6 +16,8 @@ bibliography: bibliography.bib
 ---
 
 # Introduction 
+TBD by Thathi
+
 
 ## Setup 
 
@@ -365,7 +367,7 @@ save(ss, file = "TCGA_mDNAsi.Rda")
 ```
 
 # Conclusion
-
+TBD by Thathi
 # Session information
 
 ```{r}
