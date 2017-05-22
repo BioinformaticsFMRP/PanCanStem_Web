@@ -14,12 +14,8 @@ editor_options:
   chunk_output_type: inline
 bibliography: bibliography.bib
 ---
-***
-# Purpose 
-
-***
 # Introduction
-
+TBD by Artem
 
 # Setup 
 
@@ -448,5 +444,8 @@ main <- function()
   main.predict( "pcbc-stemsig-reduced.tsv", "mRNA_StemScore_reduced.tsv" )
 }
 ```
+
+# Conclusion 
+TBD by Artem
 
 # References
