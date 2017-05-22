@@ -1,0 +1,446 @@
+---
+title:  Trains a one-class dense model on the PCBC dataset
+author: Artem Sokolov
+output: html_document 
+---
+***
+#Purpose 
+
+***
+# Introduction
+
+
+# Setup 
+Make sure you have the following packages downloaded and loaded into your library. 
+We will retrieve data from Synapse, an open source data platform. [synapse](https://www.synapse.org/)
+A free account must be made before accessing synapse data, running the 'synapseLogin' function will prompt you to loin.
+```{r,error= FALSE}
+library(gelnet)
+library(dplyr)
+library(biomaRt)
+library(synapseClient)
+synapseLogin()
+
+```
+
+
+
+# genes2hugo function
+Ensembl is a gene browser that will be used to gather information on the gene type and geneid. [ensembl](www.ensembl.org)
+useMArt is the function used connect to the Ensembl website and select the dataset you with to work with. 
+Use the getBM function to retrieve the the data for the SRC gene from ensembl.
+```{r, eval = FALSE}
+  ## Retrieve the EMSEMBL -> HUGO mapping
+  ensembl <- biomaRt::useMart( "ENSEMBL_MART_ENSEMBL", host="www.ensembl.org", dataset="hsapiens_gene_ensembl" )
+  ID <- biomaRt::getBM( attributes=c('srcType', 'hgnc_symbol'), filters=srcType, values=v, mart=ensembl )
+
+```
+
+Next make sure the data was mapped by checking that there is at least one row of data.
+Filter out empty data
+```{r, eval = FALSE}
+ ID <- biomaRt::getBM( attributes=c(srcType, "hgnc_symbol"), filters=srcType, values=v, mart=ensembl )
+   ## Make sure there was at least one mapping
+  if( nrow(ID) < 1 )
+    stop( "No IDs mapped successfully" )
+  
+  ## Drop empty duds
+  j <- which( ID[,2] == "" )
+  if( length(j) > 0 )
+    ID <- ID[-j,]
+  stopifnot( all( ID[,1] %in% v ) )
+  
+  ID
+```
+
+##Continuous genes2hugo Function
+```{r, error = FALSE, }
+## Maps ENSEMBL IDs to HUGO
+## Use srcType = "ensembl_gene_id" for Ensembl IDs
+## Use srcType = "entrezgene" for Entrez IDs
+genes2hugo <- function( v, srcType = "ensembl_gene_id" )
+{
+  ## Retrieve the EMSEMBL -> HUGO mapping
+  ensembl <- biomaRt::useMart( "ENSEMBL_MART_ENSEMBL", host="www.ensembl.org", dataset="hsapiens_gene_ensembl" )
+  ID <- biomaRt::getBM( attributes=c(srcType, "hgnc_symbol"), filters=srcType, values=v, mart=ensembl )
+   ## Make sure there was at least one mapping
+  if( nrow(ID) < 1 )
+    stop( "No IDs mapped successfully" )
+  
+  ## Drop empty duds
+  j <- which( ID[,2] == "" )
+  if( length(j) > 0 )
+    ID <- ID[-j,]
+  stopifnot( all( ID[,1] %in% v ) )
+  
+  ID
+}
+
+```
+
+
+#Train function 
+
+Here is where synapse will be used to retrieve the information. 
+[synGet](https://www.rdocumentation.org/packages/synapseClient/versions/1.13-4/topics/synGet)  will be used to load and save RNAseq data.
+[synTableQuery](https://www.rdocumentation.org/packages/synapseClient/versions/1.13-4/topics/synTableQuery) is used to gather meta data. 
+In this case the downlaod location is set to '/data/PCBC' but it can be changed to wherever you would like or it can be set to 'NULL' and it will be stored in your chache.
+
+'X' is a large matrix 13189 genes by 229 cell samples.
+'Y' is a single variable data frame consting of 301 observations. 
+```{r}
+  ## Load RNAseq data
+  synRNA <- synGet( "syn2701943", downloadLocation = "/data/PCBC" )
+  X <- read.delim( synRNA@filePath ) %>%
+    tibble::column_to_rownames( "tracking_id" ) %>%
+    as.matrix()
+  X[1:3,1:3]
+
+```
+
+```{r}
+  ## Retrieve metadata
+  synMeta <- synTableQuery( "SELECT UID, Diffname_short FROM syn3156503" )
+  Y <- synMeta@values %>%
+    mutate( UID = gsub("-", ".", UID) ) %>%
+    tibble::column_to_rownames( "UID" )
+  head(Y)
+```
+
+ Filter the labels from the meta data. Notice the change in format for 'y' 
+```{r}
+  ## Retrieve the labels from the metadata
+  y <- Y[colnames(X),]
+ 
+  names(y) <- colnames(X)
+  ## Fix the missing labels by hand
+  y["SC11.014BEB.133.5.6.11"] <- "EB"
+  y["SC12.039ECTO.420.436.92.16"] <- "ECTO"
+  
+  ## Drop the splice form ID from the gene names
+  v <- strsplit( rownames(X), "\\." ) %>% lapply( "[[", 1 ) %>% unlist()
+  
+  rownames(X) <- v
+  head(y)
+  
+```
+
+Call the genes2hugo function created above and use the labels from the RNSseq data to map genetype and geneid.
+The result of this function is a data frame with two variables consisting of 12952 observations.
+```{r}
+ ## Map Ensembl IDs to HUGO
+  V <- genes2hugo( rownames(X) )
+  head(V)
+ 
+```
+
+
+Now change the row names of X from the gene name to the hgnc (HUGO Gene Nomenclature Committee) symbol. Notice that the dimensions of 'X' change from 13189 rows to 12952 rows.
+```{r}
+ X <- X[V[,1],]
+  rownames(X) <- V[,2]
+  X[1:3,1:3]
+```
+```{r}
+  dim(X)
+```
+
+ Reduce gene set to the provides list.
+```{r,eval= FALSE}
+  if( is.null( fnGenes ) == FALSE )
+  {
+    vGenes <- read.delim( fnGenes, header=FALSE ) %>% as.matrix() %>% drop()
+    VE <- genes2hugo( vGenes, "entrezgene" )
+    X <- X[intersect( rownames(X), VE[,2] ),]
+  }
+```
+
+Find the mean center by subtracting the mean of each gene (m) from the RNSseq data(X).
+```{r}
+  m <- apply( X, 1, mean )
+  X <- X - m
+  X[1:3,1:3]
+
+```
+Identify stem cells and break up all samples into 2 groups:
+*Stem cell(X.tr) -- 78 samples 
+*not stem cell (X.bk) -- 151 samples 
+```{r}
+  j <- which( y == "SC" )
+  X.tr <- X[,j]
+  X.tr[1:3,1:3]
+```
+```{r}
+  X.bk <- X[,-j]
+  X.bk[1:3,1:3]
+```
+
+
+Now we can begin to train the the one-class model with the gelnet function using the PCBC stem cell data. 
+The [gelnet] (https://www.rdocumentation.org/packages/gelnet/versions/1.2.1/topics/gelnet) function can be used for Linear Regression, Binary Classification and One class Problems by using an iterative method called coordinanted descent.
+
+gelnet(X, y, l1, l2)
+X: n by p matrix => transpose( 'X.r' )
+y: NULL for one class models 
+l1: coefficient for the L1-norm penalty => '0' 
+l2: coefficient for the L2-norm penalty => '1'
+
+Make sure you transpose the matrix so that the genes are listed as rows and samples as columns.
+Then store the results as a tsv file (pcbc-stemsig.tsv). 
+```{r, error= FALSE }
+  mm <- gelnet( t(X.tr), NULL, 0, 1 )
+  
+```
+```{r, eval= FALSE}
+  write.table( mm$w, file=fnOut, sep="\t", quote=FALSE, col.names=FALSE )
+  
+```
+
+
+Leave-one-out cross validation will be used to test the accuracy of the model. Running this chunk will return a numeric vector containing the same size as the number of samples of the 'X.tr' variable (in this case 78). If it is successful the returned values should all be equal to 1.
+```{r, eval = FALSE }
+  ## Perform leave-one-out cross-validation
+  auc <- c()
+  for( i in 1:ncol(X.tr) )
+  {
+    ## Train a model on non-left-out data
+    X1 <- X.tr[,-i]
+    m1 <- gelnet( t(X1), NULL, 0, 1 )
+    
+    ## Score the left-out sample against the background
+    s.bk <- apply( X.bk, 2, function(z) {cor( m1$w, z, method="sp" )} )
+    s1 <- cor( m1$w, X.tr[,i], method="sp" )
+    
+    ## AUC = P( left-out sample is scored above the background )
+    auc[i] <- sum( s1 > s.bk ) / length(s.bk)
+    cat( "Current AUC: ", auc[i], "\n" )
+    cat( "Average AUC: ", mean(auc), "\n" )
+  }
+  
+  return(auc)
+```
+
+
+##The continous main.train Function
+```{r, eval= FALSE}
+## fnOut - filename of the output signature
+## fnGenes - [optional] filename of the list of entrez ID to consider
+main.train <- function( fnOut = "pcbc-stemsig.tsv", fnGenes = NULL )
+{
+  ## Load RNAseq data
+  synRNA <- synGet( "syn2701943", downloadLocation = "/data/PCBC" )
+  X <- read.delim( synRNA@filePath ) %>%
+    tibble::column_to_rownames( "tracking_id" ) %>%
+    as.matrix()
+  
+  ## Retrieve metadata
+  synMeta <- synTableQuery( "SELECT UID, Diffname_short FROM syn3156503" )
+  Y <- synMeta@values %>%
+    mutate( UID = gsub("-", ".", UID) ) %>%
+    tibble::column_to_rownames( "UID" )
+  
+  ## Retrieve the labels from the metadata
+  y <- Y[colnames(X),]
+  names(y) <- colnames(X)
+  
+  ## Fix the missing labels by hand
+  y["SC11.014BEB.133.5.6.11"] <- "EB"
+  y["SC12.039ECTO.420.436.92.16"] <- "ECTO"
+  
+  ## Drop the splice form ID from the gene names
+  v <- strsplit( rownames(X), "\\." ) %>% lapply( "[[", 1 ) %>% unlist()
+  rownames(X) <- v
+  
+  ## Map Ensembl IDs to HUGO
+  V <- genes2hugo( rownames(X) )
+  X <- X[V[,1],]
+  rownames(X) <- V[,2]
+  
+  ## Reduce the gene set to the provided list (if applicable)
+  if( is.null( fnGenes ) == FALSE )
+  {
+    vGenes <- read.delim( fnGenes, header=FALSE ) %>% as.matrix() %>% drop()
+    VE <- genes2hugo( vGenes, "entrezgene" )
+    X <- X[intersect( rownames(X), VE[,2] ),]
+  }
+  
+  ## Mean-center the data
+  m <- apply( X, 1, mean )
+  X <- X - m
+  
+  ## Identify stem cell samples
+  j <- which( y == "SC" )
+  X.tr <- X[,j]
+  X.bk <- X[,-j]
+  
+  ## Train a one-class model
+  mm <- gelnet( t(X.tr), NULL, 0, 1 )
+  
+  ## Store the signature to a file
+  write.table( mm$w, file=fnOut, sep="\t", quote=FALSE, col.names=FALSE )
+  
+  ## Perform leave-one-out cross-validation
+  auc <- c()
+  for( i in 1:ncol(X.tr) )
+  {
+    ## Train a model on non-left-out data
+    X1 <- X.tr[,-i]
+    m1 <- gelnet( t(X1), NULL, 0, 1 )
+    
+    ## Score the left-out sample against the background
+    s.bk <- apply( X.bk, 2, function(z) {cor( m1$w, z, method="sp" )} )
+    s1 <- cor( m1$w, X.tr[,i], method="sp" )
+    
+    ## AUC = P( left-out sample is scored above the background )
+    auc[i] <- sum( s1 > s.bk ) / length(s.bk)
+    cat( "Current AUC: ", auc[i], "\n" )
+    cat( "Average AUC: ", mean(auc), "\n" )
+  }
+  
+  return(auc)
+}
+```
+
+
+# Predict function
+
+Use [read.delium] (http://rfunction.com/archives/1441) to load the signiture from the svaed file(pcbc-stemsig.tsv) and store it as a variable w. 
+w is a numeric vector the same size as the number of selected genes, in this case 12952.
+```{r}
+  fnSig = "pcbc-stemsig.tsv"
+  w <- read.delim( fnSig, header=FALSE, row.names=1 ) %>% as.matrix() %>% drop()
+  
+```
+```{r}
+w[1:10]
+```
+
+Create a fucntion f that will be used in the next steps to ..
+```{r}
+  ## Reduces HUGO|POSITION gene IDs to just HUGO
+  f <- function( v ) unlist( lapply( strsplit( v, "\\|" ), "[[", 1 ) )
+  
+```
+
+
+Again we retrieve data from synapse. For this specific data you will need NIH approval to get access. 
+Once you gather the data, create a data frame 'X' and filter so that 'X' contains genes that mapped and values from the signiture gene set. 
+'X' will be a large data frame with 11810 rows by 11070 columns.
+```{r}
+  s <- synGet( "syn4976369", downloadLocation = "/data/pancan" )
+  X <- read.delim( s@filePath, as.is=TRUE, check.names=FALSE ) %>%	## Read the raw values
+    filter( !grepl( "\\?", gene_id ) ) %>%		## Drop genes with no mapping to HUGO
+    mutate( gene_id = f( gene_id ) ) %>%		## Clip gene ids to HUGO
+    filter( gene_id %in% names(w) )			## Reduce to the signature's gene set
+  head(X)
+  
+```
+
+The data for SLC35E2 will have multiple gene id's. Filter it by only keeping the first entry.
+```{r}
+  j <- grep( "SLC35E2", X[,1] )
+  if( length(j) > 1 )
+    X <- X[-j[-1],]
+  
+```
+
+Convert the data frame 'X' to a matrix. Rows are Gene id's and columns are Gene Sets. Notice the the size of this matirx is now 11809 rows by 11069 columns. 
+```{r}
+  rownames(X) <- NULL
+  X <- X %>% tibble::column_to_rownames( "gene_id" ) %>% as.matrix()
+  X[1:3,1:3]
+```
+
+ Reduce the signature to the common set of genes.
+```{r}
+  stopifnot( all( rownames(X) %in% names(w) ) )
+  w <- w[ rownames(X) ]
+  w[1:5]
+```
+
+
+Score the Maxtix 'X' using Spearman coorelation. 
+```{r}
+  s <- apply( X, 2, function(z) {cor( z, w, method="sp", use="complete.obs" )} )
+  s[1:5]
+```
+
+Scale the scores to be between 0 and 1
+```{r}
+  s <- s - min(s)
+  s <- s / max(s)
+  s[1:5]
+  
+```
+
+Then output scores to a file mRNA_StemScore.tsv.
+```{r, eval=FALSE}
+  write.table( cbind(s), file=fnOut, sep="\t", quote=FALSE, col.names=FALSE )
+```
+
+
+##The continous main.predict Function 
+```{r}
+## Uses the signature stored in fnSig to score PanCan33 data and stores the result to fnOut
+main.predict <- function( fnSig = "pcbc-stemsig.tsv", fnOut = "mRNA_StemScore.tsv" )
+{
+  ## Load the signature
+  w <- read.delim( fnSig, header=FALSE, row.names=1 ) %>% as.matrix() %>% drop()
+  
+  ## Reduces HUGO|POSITION gene IDs to just HUGO
+  f <- function( v ) unlist( lapply( strsplit( v, "\\|" ), "[[", 1 ) )
+  
+  s <- synGet( "syn4976369", downloadLocation = "/data/pancan" )
+  X <- read.delim( s@filePath, as.is=TRUE, check.names=FALSE ) %>%	## Read the raw values
+    filter( !grepl( "\\?", gene_id ) ) %>%		## Drop genes with no mapping to HUGO
+    mutate( gene_id = f( gene_id ) ) %>%		## Clip gene ids to HUGO
+    filter( gene_id %in% names(w) )			## Reduce to the signature's gene set
+  
+  ## SLC35E2 has multiple entries with the same HUGO id
+  ## Keep the first entry only
+  j <- grep( "SLC35E2", X[,1] )
+  if( length(j) > 1 )
+    X <- X[-j[-1],]
+  
+  ## Convert to a matrix
+  rownames(X) <- NULL
+  X <- X %>% tibble::column_to_rownames( "gene_id" ) %>% as.matrix()
+  
+  ## Reduce the signature to the common set of genes
+  stopifnot( all( rownames(X) %in% names(w) ) )
+  w <- w[ rownames(X) ]
+  
+  ####### Score via Spearman correlation
+  s <- apply( X, 2, function(z) {cor( z, w, method="sp", use="complete.obs" )} )
+  
+  ## Scale the scores to be between 0 and 1
+  s <- s - min(s)
+  s <- s / max(s)
+  
+  write.table( cbind(s), file=fnOut, sep="\t", quote=FALSE, col.names=FALSE )
+}
+
+```
+
+
+
+# Main Function 
+Once you have created all of the 'genes2hugo' 'main.train' 'main.predict' adn 'f' create the 'main' function. This function will train and apply the full and reduced signatures. After you have have created all of the functions run 'main' to preform the full analysis. 
+```{r}
+main <- function()
+{
+  ## Train a full signature, which will be saved to pcbc-stemsig.tsv
+  main.train()
+  
+  ## Apply the full signature to score the entire PanCan33 cohort
+  main.predict()
+  
+  ## Train a reduced signature, using the provided list of entrez IDs
+  main.train( "pcbc-stemsig-reduced.tsv", "neighbor_genes_list_1042.txt" )
+  
+  ## Apply the reduced signature to score the entire PanCan33 cohort
+  main.predict( "pcbc-stemsig-reduced.tsv", "mRNA_StemScore_reduced.tsv" )
+}
+```
+
+
