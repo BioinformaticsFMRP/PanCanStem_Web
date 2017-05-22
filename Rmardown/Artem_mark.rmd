@@ -4,7 +4,7 @@ author: Artem Sokolov
 output: html_document 
 ---
 ***
-#Purpose 
+# Purpose 
 
 ***
 # Introduction
@@ -25,7 +25,7 @@ synapseLogin()
 
 
 
-# genes2hugo function
+# genes2hugo 
 Ensembl is a gene browser that will be used to gather information on the gene type and geneid. [ensembl](www.ensembl.org)
 useMArt is the function used connect to the Ensembl website and select the dataset you with to work with. 
 Use the getBM function to retrieve the the data for the SRC gene from ensembl.
@@ -53,7 +53,7 @@ Filter out empty data
   ID
 ```
 
-##Continuous genes2hugo Function
+## Continuous genes2hugo Function
 ```{r, error = FALSE, }
 ## Maps ENSEMBL IDs to HUGO
 ## Use srcType = "ensembl_gene_id" for Ensembl IDs
@@ -79,15 +79,15 @@ genes2hugo <- function( v, srcType = "ensembl_gene_id" )
 ```
 
 
-#Train function 
+# Train
 
 Here is where synapse will be used to retrieve the information. 
 [synGet](https://www.rdocumentation.org/packages/synapseClient/versions/1.13-4/topics/synGet)  will be used to load and save RNAseq data.
 [synTableQuery](https://www.rdocumentation.org/packages/synapseClient/versions/1.13-4/topics/synTableQuery) is used to gather meta data. 
-In this case the downlaod location is set to '/data/PCBC' but it can be changed to wherever you would like or it can be set to 'NULL' and it will be stored in your chache.
+In this case the downlaod location is set to '/data/PCBC' but it can be changed to wherever you would like or it can be set to NULL and it will be stored in your chache.  
 
-'X' is a large matrix 13189 genes by 229 cell samples.
-'Y' is a single variable data frame consting of 301 observations. 
+X is a large matrix 13189 genes by 229 cell samples.  
+Y is a single variable data frame consting of 301 observations.   
 ```{r}
   ## Load RNAseq data
   synRNA <- synGet( "syn2701943", downloadLocation = "/data/PCBC" )
@@ -107,7 +107,7 @@ In this case the downlaod location is set to '/data/PCBC' but it can be changed 
   head(Y)
 ```
 
- Filter the labels from the meta data. Notice the change in format for 'y' 
+ Filter the labels from the meta data. Notice the change in format for y 
 ```{r}
   ## Retrieve the labels from the metadata
   y <- Y[colnames(X),]
@@ -135,7 +135,7 @@ The result of this function is a data frame with two variables consisting of 129
 ```
 
 
-Now change the row names of X from the gene name to the hgnc (HUGO Gene Nomenclature Committee) symbol. Notice that the dimensions of 'X' change from 13189 rows to 12952 rows.
+Now change the row names of X from the gene name to the hgnc (HUGO Gene Nomenclature Committee) symbol. Notice that the dimensions of X change from 13189 rows to 12952 rows.
 ```{r}
  X <- X[V[,1],]
   rownames(X) <- V[,2]
@@ -177,13 +177,13 @@ Identify stem cells and break up all samples into 2 groups:
 
 
 Now we can begin to train the the one-class model with the gelnet function using the PCBC stem cell data. 
-The [gelnet] (https://www.rdocumentation.org/packages/gelnet/versions/1.2.1/topics/gelnet) function can be used for Linear Regression, Binary Classification and One class Problems by using an iterative method called coordinanted descent.
+The [gelnet](https://www.rdocumentation.org/packages/gelnet/versions/1.2.1/topics/gelnet) function can be used for Linear Regression, Binary Classification and One class Problems by using an iterative method called coordinanted descent.
 
-gelnet(X, y, l1, l2)
-X: n by p matrix => transpose( 'X.r' )
-y: NULL for one class models 
-l1: coefficient for the L1-norm penalty => '0' 
-l2: coefficient for the L2-norm penalty => '1'
+gelnet(X, y, l1, l2)  
+X: n by p matrix => transpose( X.r )  
+y: NULL for one class models   
+l1: coefficient for the L1-norm penalty => 0   
+l2: coefficient for the L2-norm penalty => 1  
 
 Make sure you transpose the matrix so that the genes are listed as rows and samples as columns.
 Then store the results as a tsv file (pcbc-stemsig.tsv). 
@@ -197,7 +197,7 @@ Then store the results as a tsv file (pcbc-stemsig.tsv).
 ```
 
 
-Leave-one-out cross validation will be used to test the accuracy of the model. Running this chunk will return a numeric vector containing the same size as the number of samples of the 'X.tr' variable (in this case 78). If it is successful the returned values should all be equal to 1.
+Leave-one-out cross validation will be used to test the accuracy of the model. Running this chunk will return a numeric vector containing the same size as the number of samples of the X.tr variable (in this case 78). If it is successful the returned values should all be equal to 1.
 ```{r, eval = FALSE }
   ## Perform leave-one-out cross-validation
   auc <- c()
@@ -221,7 +221,7 @@ Leave-one-out cross validation will be used to test the accuracy of the model. R
 ```
 
 
-##The continous main.train Function
+## The continous main.train Function
 ```{r, eval= FALSE}
 ## fnOut - filename of the output signature
 ## fnGenes - [optional] filename of the list of entrez ID to consider
@@ -302,9 +302,9 @@ main.train <- function( fnOut = "pcbc-stemsig.tsv", fnGenes = NULL )
 ```
 
 
-# Predict function
+# Predict
 
-Use [read.delium] (http://rfunction.com/archives/1441) to load the signiture from the svaed file(pcbc-stemsig.tsv) and store it as a variable w. 
+Use [read.delium](http://rfunction.com/archives/1441) to load the signiture from the svaed file(pcbc-stemsig.tsv) and store it as a variable w. 
 w is a numeric vector the same size as the number of selected genes, in this case 12952.
 ```{r}
   fnSig = "pcbc-stemsig.tsv"
@@ -325,7 +325,7 @@ Create a fucntion f that will be used in the next steps to ..
 
 Again we retrieve data from synapse. For this specific data you will need NIH approval to get access. 
 Once you gather the data, create a data frame 'X' and filter so that 'X' contains genes that mapped and values from the signiture gene set. 
-'X' will be a large data frame with 11810 rows by 11070 columns.
+X will be a large data frame with 11810 rows by 11070 columns.
 ```{r}
   s <- synGet( "syn4976369", downloadLocation = "/data/pancan" )
   X <- read.delim( s@filePath, as.is=TRUE, check.names=FALSE ) %>%	## Read the raw values
@@ -344,7 +344,7 @@ The data for SLC35E2 will have multiple gene id's. Filter it by only keeping the
   
 ```
 
-Convert the data frame 'X' to a matrix. Rows are Gene id's and columns are Gene Sets. Notice the the size of this matirx is now 11809 rows by 11069 columns. 
+Convert the data frame X to a matrix. Rows are Gene id's and columns are Gene Sets. Notice the the size of this matirx is now 11809 rows by 11069 columns. 
 ```{r}
   rownames(X) <- NULL
   X <- X %>% tibble::column_to_rownames( "gene_id" ) %>% as.matrix()
@@ -379,7 +379,7 @@ Then output scores to a file mRNA_StemScore.tsv.
 ```
 
 
-##The continous main.predict Function 
+## The continous main.predict Function 
 ```{r}
 ## Uses the signature stored in fnSig to score PanCan33 data and stores the result to fnOut
 main.predict <- function( fnSig = "pcbc-stemsig.tsv", fnOut = "mRNA_StemScore.tsv" )

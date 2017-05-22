@@ -18,6 +18,7 @@ bibliography: bibliography.bib
 # Purpose 
 
 ***
+
 # Introduction 
 
 # Setup 
@@ -138,7 +139,7 @@ for(i in 1:ncol(X.tr)) {
 ```
 
 
-If the validation is successful you will notice that the 'auc' variable will be a numeric vector consisting of only 1's.  
+If the validation is successful you will notice that the auc variable will be a numeric vector consisting of only 1's.  
 ```{r}
 print(s1)
 ```
@@ -147,7 +148,7 @@ head(auc)
 all(auc == 1)
 ```
 
-# Replace NA fucntion 
+# Replace NA 
 
 The Replace NA function is used to replace any values that are NA (not available) 
 with  either the mean or the median value of the probe for a give group. 
@@ -212,7 +213,7 @@ replace.NA <-function(data,type.info,by = "mean"){
 # Score PanCan33 Data 
 
 Use the signature that was created and stored as 'pcbc-stemsig.p219.rda' to now score PanCan33 data. 
-First load the data 'data.pan'
+First load the data data.pan
 Replace empty values with the median probe values.
 
 ```{r}
@@ -231,7 +232,7 @@ head(testset)
 ```
 
 
-Load the signature 'w' which should be a numeric row vector the size of the probes of interest. 
+Load the signature w which should be a numeric row vector the size of the probes of interest. 
 ```{r}
 load("pcbc-stemsig.p219.Rda")
 w <- mm$w
@@ -244,14 +245,14 @@ X <- testset[as.character(names(w)),]
 head(X)
 ```
 
-Convert 'X' into a matrix
+Convert X into a matrix
 ```{r}
 X <- as.matrix(X)
 X[1:3,1:3]
 ```
 
 
-Score via linear model. The resulting variable 'ss' will be row vector 9627 in length 
+Score via linear model. The resulting variable ss will be row vector 9627 in length 
 ```{r}
 ss <- t(w) %*% X
 ss[1,1:5]

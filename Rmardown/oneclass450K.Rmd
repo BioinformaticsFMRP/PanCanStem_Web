@@ -90,7 +90,6 @@ for( i in 1:ncol(X.tr) ) {
   cat( "Current AUC: ", auc[i], "\n" )
   cat( "Average AUC: ", mean(auc), "\n" )
 }
-# 
 ```
 
 ```{r}
