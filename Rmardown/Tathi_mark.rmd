@@ -370,6 +370,14 @@ colnames(ss) <- "mDNAsi"
 save(ss, file = "TCGA_mDNAsi.Rda")
 ```
 
+# Conclusion
+
+# Session information
+
+```{r}
+sessionInfo()
+```
+
 # References
 
 
