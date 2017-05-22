@@ -19,7 +19,7 @@ bibliography: bibliography.bib
 TBD by Tathi
 
 
-## Setup 
+# Setup 
 
 The R package [gelnet](https://cran.r-project.org/web/packages/gelnet/index.html) will be used to train the model, 
 [dplyr](https://cran.r-project.org/web/packages/dplyr/index.html) and [gdata](https://cran.r-project.org/web/packages/gdata/index.html)  will be used for data manipulation.
