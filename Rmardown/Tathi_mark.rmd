@@ -14,17 +14,11 @@ editor_options:
   chunk_output_type: inline
 bibliography: bibliography.bib
 ---
-***
-# Purpose 
-
-***
 
 # Introduction 
 
 # Setup 
 
-
-## Install packages
 
 To install the required packages to run the code below please execute the follwing code.
 ```{r eval = FALSE}
