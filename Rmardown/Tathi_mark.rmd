@@ -55,7 +55,7 @@ X.bk <- pcbc.data.2[, as.character(M2_smp$UID)] # 55 samples
 ```
 
 
-Now we can begin to train the the one-class model with the [gelnet] (https://www.rdocumentation.org/packages/gelnet/versions/1.2.1/topics/gelnet) function. 
+Now we can begin to train the the one-class model with the [gelnet](https://www.rdocumentation.org/packages/gelnet/versions/1.2.1/topics/gelnet) function. 
 The gelnet function can be used for Linear Regression, Binary Classification and One class Problems by using an iterative method called coordinated descent.
 
 gelnet(X, y, l1, l2)
