@@ -4,7 +4,7 @@ author: Artem Sokolov
 output: html_document 
 ---
 ***
-#Purpose 
+# Purpose 
 
 ***
 # Introduction
