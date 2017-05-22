@@ -58,11 +58,11 @@ X.bk <- pcbc.data.2[, as.character(M2_smp$UID)] # 55 samples
 Now we can begin to train the the one-class model with the [gelnet](https://www.rdocumentation.org/packages/gelnet/versions/1.2.1/topics/gelnet) function. 
 The gelnet function can be used for Linear Regression, Binary Classification and One class Problems by using an iterative method called coordinated descent.
 
-gelnet(X, y, l1, l2)
-X: n by p matrix => transpose('X.r')
-y: 'NULL' for one class models 
-l1: coefficient for the L1-norm penalty => '0' 
-l2: coefficient for the L2-norm penalty => '1'
+gelnet(X, y, l1, l2)  
+X: n by p matrix => transpose('X.r')  
+y: 'NULL' for one class models   
+l1: coefficient for the L1-norm penalty => '0'  
+l2: coefficient for the L2-norm penalty => '1'  
 
 Make sure you transpose the matrix so that the genes are listed as rows and samples as columns.
 Then store the results as a tsv file (pcbc-stemsig.p219.rda). 
