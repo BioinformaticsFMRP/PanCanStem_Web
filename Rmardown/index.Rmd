@@ -1,6 +1,6 @@
 ---
 title: "PanCanStem"
-author: "Tathiane Maistro Malta,Artem Sokolov"
+author: "Tathiane Maistro Malta (code/doc), Artem Sokolov (code/doc), Michael Wells (doc), Tiago Silva (doc)"
 output:
   html_document:
     highlight: tango
@@ -14,6 +14,15 @@ editor_options:
 ---
 
 # Introduction
+
+This document contains workflows, explaining how to download the PCBC and TCGA PanCan33 datasets, 
+train a stemness signature and apply it to score TCGA samples. The mRNAsi section contains the messenger RNA stemness index workflow;  while the mDNAsi  contains the methylated DNA stemness index workflow.
+
+# Authors
+
+The messenger RNA stemness index (mRNAsi) code and documentation was created by Artem Sokolov 
+The  methylated DNA stemness index (mDNAsi) code and documentation was created by Tathiane Maistro Malta
+This report was created by Michael Wells and Tiago Silva 
 
 # Install packages
 

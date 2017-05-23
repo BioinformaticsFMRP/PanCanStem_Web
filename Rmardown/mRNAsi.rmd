@@ -216,7 +216,6 @@ for(i in 1:ncol(X.tr)){
 }
 ```
 
-
 ### Entire code: `main.train` function
 
 ```{r, eval= FALSE}
@@ -432,12 +431,6 @@ main <- function()
   
   # Apply the full signature to score the entire PanCan33 cohort
   main.predict()
-  
-  # Train a reduced signature, using the provided list of entrez IDs
-  main.train( "pcbc-stemsig-reduced.tsv", "neighbor_genes_list_1042.txt" )
-  
-  # Apply the reduced signature to score the entire PanCan33 cohort
-  main.predict( "pcbc-stemsig-reduced.tsv", "mRNA_StemScore_reduced.tsv" )
 }
 ```
 
