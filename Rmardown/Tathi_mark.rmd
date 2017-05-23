@@ -288,10 +288,10 @@ ss <- ss - min(ss)
 ss <- ss / max(ss)
 ss <- as.data.frame(t(ss))
 colnames(ss) <- "mDNAsi"   
-datatable(ss,
+datatable(head(ss),
           filter = 'top',
           options = list(scrollX = TRUE, keys = TRUE, pageLength = 40), 
-          rownames = FALSE)
+          rownames = TRUE)
 ```
 
 Save scores to a Rda file.
