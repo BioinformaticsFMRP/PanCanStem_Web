@@ -2,15 +2,13 @@
 title:  Trains a one-class dense model on the PCBC dataset
 author: Artem Sokolov
 output:
-  html_notebook:
+  html_document:
     highlight: tango
     theme: journal
     toc: yes
     toc_depth: 2
     toc_float:
       collapsed: no
-  html_document:
-    toc: yes
 editor_options:
   chunk_output_type: inline
 bibliography: bibliography.bib
@@ -100,7 +98,7 @@ synMeta <- synTableQuery( "SELECT UID, Diffname_short FROM syn3156503" )
 Y <- synMeta@values %>%
   mutate( UID = gsub("-", ".", UID) ) %>%
   tibble::column_to_rownames( "UID" )
-Y
+Y[1:4,]
 ```
 
 Filter the labels from the meta data. Notice the change in format for y 

@@ -1,0 +1,10 @@
+name: "PanCanStem"
+navbar:
+  title: "PanCanStem"
+  left:
+    - text: "Introduction"
+      href: index.html
+    - text: "mDNAsi"
+      href: Tathi_mark.html
+    - text: "mRNAsi"
+      href: Artem_mark.html

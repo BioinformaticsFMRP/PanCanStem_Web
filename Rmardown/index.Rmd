@@ -1,0 +1,35 @@
+---
+title: "PanCanStem"
+author: "Tathiane Maistro Malta,Artem Sokolov"
+output:
+  html_document:
+    highlight: tango
+    theme: journal
+    toc: yes
+    toc_depth: 2
+    toc_float:
+      collapsed: no
+editor_options:
+  chunk_output_type: inline
+---
+
+# Introduction
+
+# Install packages
+
+To install the required packages to run the code below please execute the follwing code.
+```{r eval = FALSE}
+deps <- c("gelnet","dplyr","gdata","DT")
+for(pkg in deps)  if (!pkg %in% installed.packages()) install.packages(pkg, dependencies = TRUE)
+```
+
+# Session info
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(gelnet)
+library(dplyr)
+library(gdata)
+library(DT)
+```
+```{r}
+sessionInfo()
+```

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Tathiane Maistro Malta,Artem Sokolov" />
+
+
+<title>PanCanStem</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 61px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+
+.section h2 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h3 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h4 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h5 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h6 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">PanCanStem</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Introduction</a>
+</li>
+<li>
+  <a href="Tathi_mark.html">mDNAsi</a>
+</li>
+<li>
+  <a href="Artem_mark.html">mRNAsi</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">PanCanStem</h1>
+<h4 class="author"><em>Tathiane Maistro Malta,Artem Sokolov</em></h4>
+
+</div>
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+</div>
+<div id="install-packages" class="section level1">
+<h1>Install packages</h1>
+<p>To install the required packages to run the code below please execute the follwing code.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">deps &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;gelnet&quot;</span>,<span class="st">&quot;dplyr&quot;</span>,<span class="st">&quot;gdata&quot;</span>,<span class="st">&quot;DT&quot;</span>)
+for(pkg in deps)  if (!pkg %in%<span class="st"> </span><span class="kw">installed.packages</span>()) <span class="kw">install.packages</span>(pkg, <span class="dt">dependencies =</span> <span class="ot">TRUE</span>)</code></pre></div>
+</div>
+<div id="session-info" class="section level1">
+<h1>Session info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre></div>
+<pre><code>## R Under development (unstable) (2017-03-06 r72315)
+## Platform: x86_64-apple-darwin13.4.0 (64-bit)
+## Running under: macOS Sierra 10.12.4
+## 
+## Matrix products: default
+## BLAS: /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRlapack.dylib
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## attached base packages:
+## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+## [8] methods   base     
+## 
+## other attached packages:
+##  [1] DT_0.2               stringr_1.2.0        data.table_1.10.4   
+##  [4] ggplot2_2.2.1        rtracklayer_1.36.0   GenomicRanges_1.28.0
+##  [7] GenomeInfoDb_1.12.0  IRanges_2.10.0       S4Vectors_0.14.0    
+## [10] BiocGenerics_0.22.0  RCurl_1.95-4.8       bitops_1.0-6        
+## [13] synapseClient_1.15-0 TCGAbiolinks_2.5.2   biomaRt_2.32.0      
+## [16] gdata_2.17.0         dplyr_0.5.0          gelnet_1.2.1        
+## 
+## loaded via a namespace (and not attached):
+##   [1] R.utils_2.5.0               RSQLite_1.1-2              
+##   [3] AnnotationDbi_1.38.0        htmlwidgets_0.8            
+##   [5] grid_3.4.0                  trimcluster_0.1-2          
+##   [7] BiocParallel_1.10.0         devtools_1.12.0            
+##   [9] DESeq_1.28.0                munsell_0.4.3              
+##  [11] codetools_0.2-15            preprocessCore_1.38.0      
+##  [13] withr_1.0.2                 colorspace_1.3-2           
+##  [15] GOSemSim_2.2.0              BiocInstaller_1.26.0       
+##  [17] Biobase_2.36.0              knitr_1.15.1               
+##  [19] supraHex_1.14.0             robustbase_0.92-7          
+##  [21] DOSE_3.2.0                  pathview_1.16.0            
+##  [23] KEGGgraph_1.34.0            GenomeInfoDbData_0.99.0    
+##  [25] mnormt_1.5-5                hwriter_1.3.2              
+##  [27] KMsurv_0.1-5                rprojroot_1.2              
+##  [29] downloader_0.4              c3net_1.1.1                
+##  [31] ggthemes_3.4.0              EDASeq_2.9.1               
+##  [33] diptest_0.75-7              R6_2.2.0                   
+##  [35] doParallel_1.0.10           locfit_1.5-9.1             
+##  [37] flexmix_2.3-13              fgsea_1.2.1                
+##  [39] DelayedArray_0.2.0          assertthat_0.2.0           
+##  [41] scales_0.4.1                nnet_7.3-12                
+##  [43] gtable_0.2.0                affy_1.54.0                
+##  [45] genefilter_1.58.0           cmprsk_2.2-7               
+##  [47] GlobalOptions_0.0.11        splines_3.4.0              
+##  [49] lazyeval_0.2.0              hexbin_1.27.1              
+##  [51] selectr_0.3-1               broom_0.4.2                
+##  [53] yaml_2.1.14                 reshape2_1.4.2             
+##  [55] GenomicFeatures_1.28.0      backports_1.0.5            
+##  [57] qvalue_2.8.0                clusterProfiler_3.4.0      
+##  [59] tools_3.4.0                 psych_1.7.3.21             
+##  [61] affyio_1.46.0               RColorBrewer_1.1-2         
+##  [63] Rcpp_0.12.10                plyr_1.8.4                 
+##  [65] base64enc_0.1-3             zlibbioc_1.22.0            
+##  [67] purrr_0.2.2                 ggpubr_0.1.2.999           
+##  [69] GetoptLong_0.1.6            viridis_0.4.0              
+##  [71] zoo_1.8-0                   SummarizedExperiment_1.6.0 
+##  [73] ggrepel_0.6.5               cluster_2.0.6              
+##  [75] magrittr_1.5                dnet_1.0.10                
+##  [77] DO.db_2.9                   circlize_0.3.10            
+##  [79] survminer_0.3.1.999         mvtnorm_1.0-6              
+##  [81] whisker_0.3-2               matrixStats_0.52.2         
+##  [83] aroma.light_3.6.0           hms_0.3                    
+##  [85] evaluate_0.10               xtable_1.8-2               
+##  [87] minet_3.34.0                XML_3.98-1.6               
+##  [89] mclust_5.2.3                gridExtra_2.2.1            
+##  [91] shape_1.4.2                 compiler_3.4.0             
+##  [93] tibble_1.3.0                R.oo_1.21.0                
+##  [95] htmltools_0.3.5             tidyr_0.6.1                
+##  [97] geneplotter_1.54.0          DBI_0.6-1                  
+##  [99] matlab_1.0.2                ComplexHeatmap_1.14.0      
+## [101] MASS_7.3-47                 fpc_2.1-10                 
+## [103] ShortRead_1.34.0            Matrix_1.2-8               
+## [105] readr_1.1.0                 parmigene_1.0.2            
+## [107] R.methodsS3_1.7.1           igraph_1.0.1               
+## [109] km.ci_0.5-2                 rvcheck_0.0.8              
+## [111] GenomicAlignments_1.12.0    foreign_0.8-68             
+## [113] xml2_1.1.1                  foreach_1.4.3              
+## [115] annotate_1.54.0             XVector_0.16.0             
+## [117] rvest_0.3.2                 digest_0.6.12              
+## [119] ConsensusClusterPlus_1.40.0 graph_1.54.0               
+## [121] Biostrings_2.44.0           rmarkdown_1.5              
+## [123] fastmatch_1.1-0             survMisc_0.5.4             
+## [125] dendextend_1.5.2            edgeR_3.18.0               
+## [127] curl_2.5                    kernlab_0.9-25             
+## [129] Rsamtools_1.28.0            gtools_3.5.0               
+## [131] modeltools_0.2-21           rjson_0.2.15               
+## [133] nlme_3.1-131                jsonlite_1.4               
+## [135] viridisLite_0.2.0           limma_3.32.0               
+## [137] lattice_0.20-35             KEGGREST_1.16.0            
+## [139] httr_1.2.1                  DEoptimR_1.0-8             
+## [141] survival_2.41-3             GO.db_3.4.1                
+## [143] png_0.1-7                   prabclus_2.2-6             
+## [145] iterators_1.0.8             Rgraphviz_2.20.0           
+## [147] class_7.3-14                stringi_1.1.5              
+## [149] latticeExtra_0.6-28         memoise_1.1.0              
+## [151] ape_4.1</code></pre>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
