@@ -14,7 +14,8 @@ editor_options:
 bibliography: bibliography.bib
 ---
 # Introduction
-TBD by Artem
+
+In the following workflow, we walk the reader through downloading the PCBC and TCGA PanCan33 datasets, training a stemness signature and applying it to score TCGA samples. By executing `main.train()` and `main.predict()` functions without any arguments will reproduce *mRNAsi* scores, as presented in the manuscript. The training function allows for further exploration of custom gene lists, provided through the `fnGenes` argument. The *EREG* scores in the manuscript were obtained using this functionality, by first identifying a set of differentially-methylated probes that distinguish stem cells and progenitors in PCBC, mapping those probes to the genes they regulate, and then limiting the training procedure to the resulting list of genes.
 
 # Setup 
 
@@ -441,6 +442,7 @@ main <- function()
 ```
 
 # Conclusion 
-TBD by Artem
+
+We demonstrated how to derive a gene signature capable of detecting stem cell states and applied this signature to reproduce *mRNAsi*. The signature itself was stored into a file (`pcbc-stemsig.tsv` by default), allowing for additional downstream analyses, like the Gene Set Enrichment Analysis. The robustness of the signature was estimated through leave-one-out cross-validation that is automatically performed by the `main.train()` function. After stepping through the workflow, we encourage the reader to replace PanCan33 dataset with their own samples and modify `main.predict()` to derive the corresponding *mRNAsi*.
 
 # References
