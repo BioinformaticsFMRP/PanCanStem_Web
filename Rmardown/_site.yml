@@ -4,7 +4,7 @@ navbar:
   left:
     - text: "Introduction"
       href: index.html
-    - text: "mDNAsi"
-      href: mDNAsi.html
     - text: "mRNAsi"
       href: mRNAsi.html
+    - text: "mDNAsi"
+      href: mDNAsi.html
