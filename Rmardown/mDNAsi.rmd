@@ -16,9 +16,11 @@ bibliography: bibliography.bib
 ---
 
 # Introduction 
-TBD by Tathi
 
-
+In the following workflow, we walk the reader through  training a stemness signature using normal pluripotent stem cell data from PCBC (training set) and applying it to score TCGA tumor samples (testing set). 
+We provide the DNA methylation matrices for both datasets (They are subsets of the entire DNA methylation matrices, and contain 219 stem cell-probes signature). 
+By executing the code below will reproduce mDNAsi scores, as presented in the manuscript. 
+The code allows further exploration of custom probes list signature by replacing the DNA methylation matrices. You need to make sure both datasets (training and testing) contain the same probe list. Missing values (NA) are not allowed and we provide a function to overcome it. 
 
 ```{r, message=FALSE, warning=FALSE}
 library(gelnet)
@@ -300,7 +302,9 @@ save(ss, file = "TCGA_mDNAsi.Rda")
 ```
 
 # Conclusion
-TBD by Tathi
+
+We demonstrated how to derive a gene signature capable of detecting stem cell states and applied this signature to reproduce *mDNAsi*. The signature itself was stored into a file (`pcbc-stemsig.p219.Rda` by default), allowing for additional downstream analyses, like test additional datasets. The robustness of the signature was estimated through leave-one-out cross-validation that is automatically performed by the `main.train()` function. After stepping through the workflow, we encourage the reader to replace PanCan33 dataset with their own samples to derive the corresponding *mRNAsi*.
+
 
 # Entire code
 
