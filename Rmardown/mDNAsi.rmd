@@ -29,6 +29,11 @@ library(gdata)
 library(DT)
 ```
 
+## Data download
+
+Files in this workflow are located at [https://drive.google.com/drive/folders/0BybEcxkBv6VqcmJ0QlA3bVJhc0E?usp=sharing](https://drive.google.com/drive/folders/0BybEcxkBv6VqcmJ0QlA3bVJhc0E?usp=sharing)
+
+
 ## Auxiliary functions
 
 ### Replace missing values in DNA methylation matrix
@@ -224,7 +229,7 @@ all(auc == 1)
 ### Score PanCan33 Data 
 
 In this step we will use the signature that was created in the previous steps 
-and stored as 'pcbc-stemsig.p219.rda' to score the PanCan33 data. 
+and stored as `pcbc-stemsig.p219.rda` to score the PanCan33 data. 
 First load the data `data.pan`, then replace missing values with the median probe values.
 
 ```{r}
