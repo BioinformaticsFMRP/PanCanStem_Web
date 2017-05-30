@@ -182,7 +182,7 @@ It has four main arguments described below:
 * **l2**: coefficient for the L2-norm penalty => 1
 
 Make sure you transpose the matrix so that the genes are listed as rows and samples as columns.
-Then store the results as a tsv file (pcbc-stemsig.tsv). 
+Then store the signature as a tsv file (pcbc-stemsig.tsv). 
 ```{r, eval=F}
 mm <- gelnet( t(X.tr), NULL, 0, 1 )
 ```
