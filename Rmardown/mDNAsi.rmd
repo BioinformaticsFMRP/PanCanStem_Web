@@ -121,7 +121,7 @@ datatable(pcbc.pd.f[1:3,1:4],
 ```
 
 
-Then find the mean center by subtracting the mean of each probe from the entire pcbc data. 
+Find the mean center by subtracting the mean of each probe from the entire pcbc data. 
 The mean of each probe just be in a numeric vector the same size as the number of probes, in this case 219.
 ```{r}
 m <- apply(pcbc.data, 1, mean)
@@ -138,8 +138,8 @@ datatable(head(pcbc.data.2),
 
 Identify stem cells and break up all samples into 2 groups:
 
-* Stem cell ('X.tr' object)
-* not stem cell ('X.bk' object)
+* Stem cell (X.tr object)
+* not stem cell (X.bk object)
 
 ```{r}
 # Define PCBC groups (SC and non.SC)
@@ -165,13 +165,13 @@ gelnet(X, y, l1, l2)
 
 It has four main arguments described below:
 
-* **X**: n by p matrix => transpose('X.r')
-* **y**: 'NULL' for one class models 
-* **l1**: coefficient for the L1-norm penalty => '0' 
-* **l2**: coefficient for the L2-norm penalty => '1'
+* **X**: n by p matrix => transpose(X.r)
+* **y**: NULL for one class models 
+* **l1**: coefficient for the L1-norm penalty => 0
+* **l2**: coefficient for the L2-norm penalty => 1
 
 Make sure you transpose the matrix so that the genes are listed as rows and samples as columns.
-Then store the results as a rda file (pcbc-stemsig.p219.rda). 
+Then store the signature as a rda file (pcbc-stemsig.p219.rda). 
 ```{r}
 ## Train a one-class model
 mm <- gelnet(t(X.tr), NULL, 0, 1) #NULL for a one-class task 
@@ -276,7 +276,7 @@ datatable(X[1:4,1:4],
           rownames = FALSE)
 ```
 
-Convert X into a matrix
+Convert `X` into a matrix
 ```{r}
 X <- as.matrix(X)
 ```
