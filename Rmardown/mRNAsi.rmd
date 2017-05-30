@@ -43,9 +43,6 @@ It can be accessed via R using the R/Bioconductor [biomaRt](http://bioconductor.
 which provides functions to connect to the Ensembl website and select the dataset you want with to work with. 
 Using this package, we created the auxiliary function below to map human Ensemble gene IDs to HUGO Symbols.
 
-# Methods
-
-
 ```{r, eval = FALSE}
 # Maps ENSEMBL IDs to HUGO
 # Use srcType = "ensembl_gene_id" for Ensembl IDs
@@ -67,6 +64,7 @@ genes2hugo <- function( v, srcType = "ensembl_gene_id" )
     ID
 }
 ```
+# Methods
 
 ## Train
 
