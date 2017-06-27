@@ -4,15 +4,14 @@ library(shinyjs)
 library(shinyBS)
 library(plotly)
 pdf(NULL)
+
 getTCGAdisease <- function(){
   projects <- TCGAbiolinks:::getGDCprojects()
   disease <-  projects$project_id
-  names(disease) <-  paste0(projects$disease_type, " (",disease,")")
+  idx <- grep("disease_type",colnames(projects))
+  names(disease) <-  paste0(projects[[idx]], " (",disease,")")
   disease <- disease[sort(names(disease))]
-  tcga.disease <- disease[grep("TCGA",disease)]
-  tcga.disease <- gsub("TCGA-","",tcga.disease)
-  tcga.disease <- tcga.disease[sort(names(tcga.disease), index.return=TRUE)$ix]
-  return(tcga.disease)
+  return(disease)
 }
 
 #' busyIndicator
