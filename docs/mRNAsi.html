@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Artem Sokolov" />
+
+
+<title>Trains a one-class dense model on the PCBC dataset</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; background-color: #f8f8f8; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+pre, code { background-color: #f8f8f8; }
+code > span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code > span.dt { color: #204a87; } /* DataType */
+code > span.dv { color: #0000cf; } /* DecVal */
+code > span.bn { color: #0000cf; } /* BaseN */
+code > span.fl { color: #0000cf; } /* Float */
+code > span.ch { color: #4e9a06; } /* Char */
+code > span.st { color: #4e9a06; } /* String */
+code > span.co { color: #8f5902; font-style: italic; } /* Comment */
+code > span.ot { color: #8f5902; } /* Other */
+code > span.al { color: #ef2929; } /* Alert */
+code > span.fu { color: #000000; } /* Function */
+code > span.er { color: #a40000; font-weight: bold; } /* Error */
+code > span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #000000; } /* SpecialChar */
+code > span.vs { color: #4e9a06; } /* VerbatimString */
+code > span.ss { color: #4e9a06; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #000000; } /* Variable */
+code > span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code > span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code > span.ex { } /* Extension */
+code > span.at { color: #c4a000; } /* Attribute */
+code > span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code > span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 61px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+
+.section h2 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h3 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h4 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h5 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+.section h6 {
+  padding-top: 66px;
+  margin-top: -66px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">PanCanStem</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Introduction</a>
+</li>
+<li>
+  <a href="mDNAsi.html">mDNAsi</a>
+</li>
+<li>
+  <a href="mRNAsi.html">mRNAsi</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Trains a one-class dense model on the PCBC dataset</h1>
+<h4 class="author"><em>Artem Sokolov</em></h4>
+
+</div>
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>In the following workflow, we walk the reader through downloading the PCBC and TCGA PanCan33 datasets, training a stemness signature and applying it to score TCGA samples. By executing <code>main.train()</code> and <code>main.predict()</code> functions without any arguments will reproduce <em>mRNAsi</em> scores, as presented in the manuscript. The training function allows for further exploration of custom gene lists, provided through the <code>fnGenes</code> argument. The <em>EREG</em> scores in the manuscript were obtained using this functionality, by first identifying a set of differentially-methylated probes that distinguish stem cells and progenitors in PCBC, mapping those probes to the genes they regulate, and then limiting the training procedure to the resulting list of genes.</p>
+</div>
+<div id="setup" class="section level1">
+<h1>Setup</h1>
+<div id="r-packages" class="section level2">
+<h2>R packages</h2>
+<p>Make sure you have the following packages downloaded and loaded into your library. For R synapse client please check this <a href="http://docs.synapse.org/articles/getting_started.html">article</a>. We will retrieve data from <a href="https://www.synapse.org/">Synapse</a>, an open source data platform. A free account must be made before accessing synapse data, running the <code>synapseLogin</code> function will prompt you to login.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(gelnet)
+<span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(biomaRt)
+<span class="kw">library</span>(synapseClient)
+<span class="kw">synapseLogin</span>()</code></pre></div>
+</div>
+<div id="auxiliary-functions" class="section level2">
+<h2>Auxiliary functions</h2>
+<div id="mapping-ensembl-ids-to-hugo" class="section level3">
+<h3>Mapping ENSEMBL IDs to HUGO</h3>
+<p><a href="www.ensembl.org">Ensembl</a> is a gene browser that will be used to gather information on the gene type and GeneID <span class="citation">(Yates et al. 2015)</span>. It can be accessed via R using the R/Bioconductor <a href="http://bioconductor.org/packages/biomaRt/">biomaRt</a> package <span class="citation">(Durinck et al. 2005,<span class="citation">Durinck et al. (2009)</span>)</span> which provides functions to connect to the Ensembl website and select the dataset you want with to work with. Using this package, we created the auxiliary function below to map human Ensemble gene IDs to HUGO Symbols.</p>
+</div>
+</div>
+</div>
+<div id="methods" class="section level1">
+<h1>Methods</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Maps ENSEMBL IDs to HUGO</span>
+<span class="co"># Use srcType = &quot;ensembl_gene_id&quot; for Ensembl IDs</span>
+<span class="co"># Use srcType = &quot;entrezgene&quot; for Entrez IDs</span>
+genes2hugo &lt;-<span class="st"> </span>function( v, <span class="dt">srcType =</span> <span class="st">&quot;ensembl_gene_id&quot;</span> )
+{
+    ## Retrieve the EMSEMBL -&gt; HUGO mapping
+    ensembl &lt;-<span class="st"> </span>biomaRt::<span class="kw">useMart</span>( <span class="st">&quot;ENSEMBL_MART_ENSEMBL&quot;</span>, <span class="dt">host=</span><span class="st">&quot;www.ensembl.org&quot;</span>, <span class="dt">dataset=</span><span class="st">&quot;hsapiens_gene_ensembl&quot;</span> )
+    ID &lt;-<span class="st"> </span>biomaRt::<span class="kw">getBM</span>( <span class="dt">attributes=</span><span class="kw">c</span>(srcType, <span class="st">&quot;hgnc_symbol&quot;</span>), <span class="dt">filters=</span>srcType, <span class="dt">values=</span>v, <span class="dt">mart=</span>ensembl )
+
+    ## Make sure there was at least one mapping
+    if( <span class="kw">nrow</span>(ID) &lt;<span class="st"> </span><span class="dv">1</span> ) <span class="kw">top</span>( <span class="st">&quot;No IDs mapped successfully&quot;</span> )
+    
+    ## Drop empty duds
+    j &lt;-<span class="st"> </span><span class="kw">which</span>( ID[,<span class="dv">2</span>] ==<span class="st"> &quot;&quot;</span> )
+    if( <span class="kw">length</span>(j) &gt;<span class="st"> </span><span class="dv">0</span> ) ID &lt;-<span class="st"> </span>ID[-j,]
+    <span class="kw">stopifnot</span>( <span class="kw">all</span>( ID[,<span class="dv">1</span>] %in%<span class="st"> </span>v ) )
+
+    ID
+}</code></pre></div>
+<div id="train" class="section level2">
+<h2>Train</h2>
+<p>In order to create our machine learning model, which will be used to make predictions on new data, we will create a function called <code>main.train</code> (see complete code in the end of the section). Below we will explain each of its steps.</p>
+<p>First, we will access synapse to retrieve the information. The function <a href="https://www.rdocumentation.org/packages/synapseClient/versions/1.13-4/topics/synGet">synGet</a> will be used to load and save RNA-seq data, while the function <a href="https://www.rdocumentation.org/packages/synapseClient/versions/1.13-4/topics/synTableQuery">synTableQuery</a> is used to gather the meta data. In this case the download location is set to ‘/data/PCBC’ but it can be changed to wherever you would like or it can be set to NULL and it will be stored in your cache.</p>
+<p>Data: <code>X</code> is a large matrix 13189 genes by 229 cell samples.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Load RNAseq data</span>
+synRNA &lt;-<span class="st"> </span><span class="kw">synGet</span>( <span class="st">&quot;syn2701943&quot;</span>, <span class="dt">downloadLocation =</span> <span class="st">&quot;/data/PCBC&quot;</span> )</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">X &lt;-<span class="st"> </span><span class="kw">read.delim</span>( synRNA@filePath ) %&gt;%
+tibble::<span class="kw">column_to_rownames</span>( <span class="st">&quot;tracking_id&quot;</span> ) %&gt;%<span class="st"> </span>as.matrix
+X[<span class="dv">1</span>:<span class="dv">3</span>,<span class="dv">1</span>:<span class="dv">3</span>]</code></pre></div>
+<pre><code>##                    H9.102.2.5 H9.102.2.6 H9.119.3.7
+## ENSG00000000003.10  0.6306521  0.6071539  0.7197784
+## ENSG00000000005.5  -1.2838794 -1.0152271 -0.8893850
+## ENSG00000000419.8   0.6509436  0.5833117  0.7618753</code></pre>
+<p>Meta data: <code>Y</code> is a single variable data frame consisting of 301 observations.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Retrieve metadata</span>
+synMeta &lt;-<span class="st"> </span><span class="kw">synTableQuery</span>( <span class="st">&quot;SELECT UID, Diffname_short FROM syn3156503&quot;</span> )</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Y &lt;-<span class="st"> </span>synMeta@values %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>( <span class="dt">UID =</span> <span class="kw">gsub</span>(<span class="st">&quot;-&quot;</span>, <span class="st">&quot;.&quot;</span>, UID) ) %&gt;%
+<span class="st">  </span>tibble::<span class="kw">column_to_rownames</span>( <span class="st">&quot;UID&quot;</span> )
+Y[<span class="dv">1</span>:<span class="dv">4</span>,]</code></pre></div>
+<pre><code>## [1] &quot;SC&quot; &quot;SC&quot; &quot;SC&quot; &quot;SC&quot;</code></pre>
+<p>Filter the labels from the meta data. Notice the change in format for y</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Retrieve the labels from the metadata</span>
+y &lt;-<span class="st"> </span>Y[<span class="kw">colnames</span>(X),]
+
+<span class="kw">names</span>(y) &lt;-<span class="st"> </span><span class="kw">colnames</span>(X)
+<span class="co"># Fix the missing labels by hand</span>
+y[<span class="st">&quot;SC11.014BEB.133.5.6.11&quot;</span>] &lt;-<span class="st"> &quot;EB&quot;</span>
+y[<span class="st">&quot;SC12.039ECTO.420.436.92.16&quot;</span>] &lt;-<span class="st"> &quot;ECTO&quot;</span>
+  
+## Drop the splice form ID from the gene names
+v &lt;-<span class="st"> </span><span class="kw">strsplit</span>( <span class="kw">rownames</span>(X), <span class="st">&quot;</span><span class="ch">\\</span><span class="st">.&quot;</span> ) %&gt;%<span class="st"> </span><span class="kw">lapply</span>( <span class="st">&quot;[[&quot;</span>, <span class="dv">1</span> ) %&gt;%<span class="st"> </span><span class="kw">unlist</span>()
+  
+<span class="kw">rownames</span>(X) &lt;-<span class="st"> </span>v
+<span class="kw">head</span>(y)</code></pre></div>
+<pre><code>##    H9.102.2.5    H9.102.2.6    H9.119.3.7    H9.119.5.3    H9.144.7.7 
+##          &quot;SC&quot;          &quot;SC&quot;          &quot;SC&quot;          &quot;SC&quot;          &quot;SC&quot; 
+## H9EB.558.12.6 
+##          &quot;EB&quot;</code></pre>
+<p>Call the <code>genes2hugo</code> function created before and use the labels from the RNA-seq data to map Ensembl gene ID and to HUGO symbols. The result of this function is a data frame with two variables consisting of 12952 observations.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Map Ensembl IDs to HUGO</span>
+V &lt;-<span class="st"> </span><span class="kw">genes2hugo</span>( <span class="kw">rownames</span>(X) )
+<span class="kw">head</span>(V)</code></pre></div>
+<pre><code>##   ensembl_gene_id hgnc_symbol
+## 1 ENSG00000000003      TSPAN6
+## 2 ENSG00000000005        TNMD
+## 3 ENSG00000000419        DPM1
+## 4 ENSG00000000457       SCYL3
+## 5 ENSG00000000460    C1orf112
+## 6 ENSG00000001036       FUCA2</code></pre>
+<p>Now change the row names of <code>X</code> from the gene name to the hgnc (HUGO Gene Nomenclature Committee) symbol. Notice that the dimensions of <code>X</code> change from 13189 rows to 12952 rows.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">X &lt;-<span class="st"> </span>X[V[,<span class="dv">1</span>],]
+<span class="kw">rownames</span>(X) &lt;-<span class="st"> </span>V[,<span class="dv">2</span>]
+X[<span class="dv">1</span>:<span class="dv">3</span>,<span class="dv">1</span>:<span class="dv">3</span>]</code></pre></div>
+<pre><code>##        H9.102.2.5 H9.102.2.6 H9.119.3.7
+## TSPAN6  0.6306521  0.6071539  0.7197784
+## TNMD   -1.2838794 -1.0152271 -0.8893850
+## DPM1    0.6509436  0.5833117  0.7618753</code></pre>
+<p>Reduce gene set to the provides list.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">if(!<span class="kw">is.null</span>(fnGenes)){
+  vGenes &lt;-<span class="st"> </span><span class="kw">read.delim</span>( fnGenes, <span class="dt">header=</span><span class="ot">FALSE</span> ) %&gt;%<span class="st"> </span><span class="kw">as.matrix</span>() %&gt;%<span class="st"> </span><span class="kw">drop</span>()
+  VE &lt;-<span class="st"> </span><span class="kw">genes2hugo</span>( vGenes, <span class="st">&quot;entrezgene&quot;</span> )
+  X &lt;-<span class="st"> </span>X[<span class="kw">intersect</span>( <span class="kw">rownames</span>(X), VE[,<span class="dv">2</span>] ),]
+}</code></pre></div>
+<p>Find the mean center by subtracting the mean of each gene (<code>m</code>) from the RNA-seq data (<code>X</code>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m &lt;-<span class="st"> </span><span class="kw">apply</span>( X, <span class="dv">1</span>, mean )
+X &lt;-<span class="st"> </span>X -<span class="st"> </span>m
+X[<span class="dv">1</span>:<span class="dv">3</span>,<span class="dv">1</span>:<span class="dv">3</span>]</code></pre></div>
+<pre><code>##         H9.102.2.5  H9.102.2.6 H9.119.3.7
+## TSPAN6 -0.05834864 -0.08184686 0.03077760
+## TNMD    0.14465880  0.41331110 0.53915319
+## DPM1   -0.01454011 -0.08217207 0.09639159</code></pre>
+<p>Identify stem cells and break up all samples into 2 groups:</p>
+<ul>
+<li>Stem cell(X.tr) – 78 samples</li>
+<li>not stem cell (X.bk) – 151 samples</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">j &lt;-<span class="st"> </span><span class="kw">which</span>( y ==<span class="st"> &quot;SC&quot;</span> )
+X.tr &lt;-<span class="st"> </span>X[,j]
+X.tr[<span class="dv">1</span>:<span class="dv">3</span>,<span class="dv">1</span>:<span class="dv">3</span>]</code></pre></div>
+<pre><code>##         H9.102.2.5  H9.102.2.6 H9.119.3.7
+## TSPAN6 -0.05834864 -0.08184686 0.03077760
+## TNMD    0.14465880  0.41331110 0.53915319
+## DPM1   -0.01454011 -0.08217207 0.09639159</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">X.bk &lt;-<span class="st"> </span>X[,-j]
+X.bk[<span class="dv">1</span>:<span class="dv">3</span>,<span class="dv">1</span>:<span class="dv">3</span>]</code></pre></div>
+<pre><code>##        H9EB.558.12.6 H9ECTO.219.2.6 H9MESOD15.219.2.27
+## TSPAN6   -0.11468062     0.27501852          0.2966290
+## TNMD     -0.15668920     0.32117697         -1.6137928
+## DPM1     -0.04823377     0.01228303         -0.2381685</code></pre>
+<p>Now we can begin to train the the one-class model with the <a href="https://www.rdocumentation.org/packages/gelnet/versions/1.2.1/topics/gelnet">gelnet</a> function. The gelnet function can be used for Linear Regression, Binary Classification and One class Problems by using an iterative method called coordinated descent <span class="citation">(Sokolov et al. 2016)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">gelnet</span>(X, y, l1, l2)</code></pre></div>
+<p>It has four main arguments described below:</p>
+<ul>
+<li><strong>X</strong>: n by p matrix =&gt; transpose( X.r )</li>
+<li><strong>y</strong>: <code>NULL</code> for one class models</li>
+<li><strong>l1</strong>: coefficient for the L1-norm penalty =&gt; 0</li>
+<li><strong>l2</strong>: coefficient for the L2-norm penalty =&gt; 1</li>
+</ul>
+<p>Make sure you transpose the matrix so that the genes are listed as rows and samples as columns. Then store the results as a tsv file (pcbc-stemsig.tsv).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mm &lt;-<span class="st"> </span><span class="kw">gelnet</span>( <span class="kw">t</span>(X.tr), <span class="ot">NULL</span>, <span class="dv">0</span>, <span class="dv">1</span> )</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">write.table</span>(mm$w, <span class="dt">file =</span> fnOut, <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">quote =</span> <span class="ot">FALSE</span>, <span class="dt">col.names =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p>Leave-one-out cross validation will be used to test the accuracy of the model. Running this chunk will return a numeric vector containing the same size as the number of samples of the X.tr variable (in this case 78). If it is successful the returned values should all be equal to 1.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Perform leave-one-out cross-validation
+auc &lt;-<span class="st"> </span><span class="kw">c</span>()
+for(i in <span class="dv">1</span>:<span class="kw">ncol</span>(X.tr)){
+  ## Train a model on non-left-out data
+  X1 &lt;-<span class="st"> </span>X.tr[,-i]
+  m1 &lt;-<span class="st"> </span><span class="kw">gelnet</span>( <span class="kw">t</span>(X1), <span class="ot">NULL</span>, <span class="dv">0</span>, <span class="dv">1</span> )
+  
+  ## Score the left-out sample against the background
+  s.bk &lt;-<span class="st"> </span><span class="kw">apply</span>( X.bk, <span class="dv">2</span>, function(z) {<span class="kw">cor</span>( m1$w, z, <span class="dt">method=</span><span class="st">&quot;sp&quot;</span> )} )
+  s1 &lt;-<span class="st"> </span><span class="kw">cor</span>( m1$w, X.tr[,i], <span class="dt">method=</span><span class="st">&quot;sp&quot;</span> )
+  
+  ## AUC = P( left-out sample is scored above the background )
+  auc[i] &lt;-<span class="st"> </span><span class="kw">sum</span>( s1 &gt;<span class="st"> </span>s.bk ) /<span class="st"> </span><span class="kw">length</span>(s.bk)
+  <span class="kw">cat</span>( <span class="st">&quot;Current AUC: &quot;</span>, auc[i], <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span> )
+  <span class="kw">cat</span>( <span class="st">&quot;Average AUC: &quot;</span>, <span class="kw">mean</span>(auc), <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span> )
+}</code></pre></div>
+<div id="entire-code-main.train-function" class="section level3">
+<h3>Entire code: <code>main.train</code> function</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## fnOut - filename of the output signature
+## fnGenes - [optional] filename of the list of entrez ID to consider
+main.train &lt;-<span class="st"> </span>function( <span class="dt">fnOut =</span> <span class="st">&quot;pcbc-stemsig.tsv&quot;</span>, <span class="dt">fnGenes =</span> <span class="ot">NULL</span> )
+{
+  ## Load RNAseq data
+  synRNA &lt;-<span class="st"> </span><span class="kw">synGet</span>( <span class="st">&quot;syn2701943&quot;</span>, <span class="dt">downloadLocation =</span> <span class="st">&quot;/data/PCBC&quot;</span> )
+  X &lt;-<span class="st"> </span><span class="kw">read.delim</span>( synRNA@filePath ) %&gt;%
+<span class="st">    </span>tibble::<span class="kw">column_to_rownames</span>( <span class="st">&quot;tracking_id&quot;</span> ) %&gt;%
+<span class="st">    </span><span class="kw">as.matrix</span>()
+  
+  ## Retrieve metadata
+  synMeta &lt;-<span class="st"> </span><span class="kw">synTableQuery</span>( <span class="st">&quot;SELECT UID, Diffname_short FROM syn3156503&quot;</span> )
+  Y &lt;-<span class="st"> </span>synMeta@values %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>( <span class="dt">UID =</span> <span class="kw">gsub</span>(<span class="st">&quot;-&quot;</span>, <span class="st">&quot;.&quot;</span>, UID) ) %&gt;%
+<span class="st">    </span>tibble::<span class="kw">column_to_rownames</span>( <span class="st">&quot;UID&quot;</span> )
+  
+  ## Retrieve the labels from the metadata
+  y &lt;-<span class="st"> </span>Y[<span class="kw">colnames</span>(X),]
+  <span class="kw">names</span>(y) &lt;-<span class="st"> </span><span class="kw">colnames</span>(X)
+  
+  ## Fix the missing labels by hand
+  y[<span class="st">&quot;SC11.014BEB.133.5.6.11&quot;</span>] &lt;-<span class="st"> &quot;EB&quot;</span>
+  y[<span class="st">&quot;SC12.039ECTO.420.436.92.16&quot;</span>] &lt;-<span class="st"> &quot;ECTO&quot;</span>
+  
+  ## Drop the splice form ID from the gene names
+  v &lt;-<span class="st"> </span><span class="kw">strsplit</span>( <span class="kw">rownames</span>(X), <span class="st">&quot;</span><span class="ch">\\</span><span class="st">.&quot;</span> ) %&gt;%<span class="st"> </span><span class="kw">lapply</span>( <span class="st">&quot;[[&quot;</span>, <span class="dv">1</span> ) %&gt;%<span class="st"> </span><span class="kw">unlist</span>()
+  <span class="kw">rownames</span>(X) &lt;-<span class="st"> </span>v
+  
+  ## Map Ensembl IDs to HUGO
+  V &lt;-<span class="st"> </span><span class="kw">genes2hugo</span>( <span class="kw">rownames</span>(X) )
+  X &lt;-<span class="st"> </span>X[V[,<span class="dv">1</span>],]
+  <span class="kw">rownames</span>(X) &lt;-<span class="st"> </span>V[,<span class="dv">2</span>]
+  
+  ## Reduce the gene set to the provided list (if applicable)
+  if( <span class="kw">is.null</span>( fnGenes ) ==<span class="st"> </span><span class="ot">FALSE</span> )
+  {
+    vGenes &lt;-<span class="st"> </span><span class="kw">read.delim</span>( fnGenes, <span class="dt">header=</span><span class="ot">FALSE</span> ) %&gt;%<span class="st"> </span><span class="kw">as.matrix</span>() %&gt;%<span class="st"> </span><span class="kw">drop</span>()
+    VE &lt;-<span class="st"> </span><span class="kw">genes2hugo</span>( vGenes, <span class="st">&quot;entrezgene&quot;</span> )
+    X &lt;-<span class="st"> </span>X[<span class="kw">intersect</span>( <span class="kw">rownames</span>(X), VE[,<span class="dv">2</span>] ),]
+  }
+  
+  ## Mean-center the data
+  m &lt;-<span class="st"> </span><span class="kw">apply</span>( X, <span class="dv">1</span>, mean )
+  X &lt;-<span class="st"> </span>X -<span class="st"> </span>m
+  
+  ## Identify stem cell samples
+  j &lt;-<span class="st"> </span><span class="kw">which</span>( y ==<span class="st"> &quot;SC&quot;</span> )
+  X.tr &lt;-<span class="st"> </span>X[,j]
+  X.bk &lt;-<span class="st"> </span>X[,-j]
+  
+  ## Train a one-class model
+  mm &lt;-<span class="st"> </span><span class="kw">gelnet</span>( <span class="kw">t</span>(X.tr), <span class="ot">NULL</span>, <span class="dv">0</span>, <span class="dv">1</span> )
+  
+  ## Store the signature to a file
+  <span class="kw">write.table</span>(mm$w, <span class="dt">file =</span> fnOut, <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">quote =</span> <span class="ot">FALSE</span>, <span class="dt">col.names =</span> <span class="ot">FALSE</span>)
+  
+  ## Perform leave-one-out cross-validation
+  auc &lt;-<span class="st"> </span><span class="kw">c</span>()
+  for( i in <span class="dv">1</span>:<span class="kw">ncol</span>(X.tr) )
+  {
+    ## Train a model on non-left-out data
+    X1 &lt;-<span class="st"> </span>X.tr[,-i]
+    m1 &lt;-<span class="st"> </span><span class="kw">gelnet</span>( <span class="kw">t</span>(X1), <span class="ot">NULL</span>, <span class="dv">0</span>, <span class="dv">1</span> )
+    
+    ## Score the left-out sample against the background
+    s.bk &lt;-<span class="st"> </span><span class="kw">apply</span>( X.bk, <span class="dv">2</span>, function(z) {<span class="kw">cor</span>( m1$w, z, <span class="dt">method=</span><span class="st">&quot;sp&quot;</span> )} )
+    s1 &lt;-<span class="st"> </span><span class="kw">cor</span>( m1$w, X.tr[,i], <span class="dt">method=</span><span class="st">&quot;sp&quot;</span> )
+    
+    ## AUC = P( left-out sample is scored above the background )
+    auc[i] &lt;-<span class="st"> </span><span class="kw">sum</span>( s1 &gt;<span class="st"> </span>s.bk ) /<span class="st"> </span><span class="kw">length</span>(s.bk)
+    <span class="kw">cat</span>( <span class="st">&quot;Current AUC: &quot;</span>, auc[i], <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span> )
+    <span class="kw">cat</span>( <span class="st">&quot;Average AUC: &quot;</span>, <span class="kw">mean</span>(auc), <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span> )
+  }
+  
+  <span class="kw">return</span>(auc)
+}</code></pre></div>
+</div>
+</div>
+<div id="predict" class="section level2">
+<h2>Predict</h2>
+<p>In order to predict the classes to which unseen samples belong we will create a function called <code>main.predict</code> (see complete code in the end of the section). Below we will explain each of its steps.</p>
+<p>We start by using the <a href="http://rfunction.com/archives/1441">read.delim</a> function to read the signature from the saved file (pcbc-stemsig.tsv) and store it as a variable <code>w</code>. <code>w</code> is a numeric vector the same size as the number of selected genes, in this case 12952.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fnSig =<span class="st"> &quot;pcbc-stemsig.tsv&quot;</span>
+w &lt;-<span class="st"> </span><span class="kw">read.delim</span>(fnSig, <span class="dt">header =</span> <span class="ot">FALSE</span>, <span class="dt">row.names =</span> <span class="dv">1</span> ) %&gt;%<span class="st"> </span><span class="kw">as.matrix</span>() %&gt;%<span class="st"> </span><span class="kw">drop</span>()</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">w[<span class="dv">1</span>:<span class="dv">10</span>]</code></pre></div>
+<p>Again, we retrieve data from synapse. For this specific data you will need NIH approval to get access. Once you gather the data, create a data frame <code>X</code> and filter so that <code>X</code> contains genes that mapped and values from the signature gene set. <code>X</code> will be a large data frame with 11810 rows by 11070 columns.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">s &lt;-<span class="st"> </span><span class="kw">synGet</span>( <span class="st">&quot;syn4976369&quot;</span>, <span class="dt">downloadLocation =</span> <span class="st">&quot;/data/pancan&quot;</span> )
+
+<span class="co"># Auxiliary function: Reduces HUGO|POSITION gene IDs to just HUGO</span>
+f &lt;-<span class="st"> </span>function( v ) <span class="kw">unlist</span>( <span class="kw">lapply</span>( <span class="kw">strsplit</span>( v, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">|&quot;</span> ), <span class="st">&quot;[[&quot;</span>, <span class="dv">1</span> ) )
+
+X &lt;-<span class="st"> </span><span class="kw">read.delim</span>( s@filePath, <span class="dt">as.is=</span><span class="ot">TRUE</span>, <span class="dt">check.names=</span><span class="ot">FALSE</span> ) %&gt;%<span class="st">    </span>## Read the raw values
+<span class="st">     </span><span class="kw">filter</span>( !<span class="kw">grepl</span>( <span class="st">&quot;</span><span class="ch">\\</span><span class="st">?&quot;</span>, gene_id ) ) %&gt;%<span class="st">     </span>## Drop genes with no mapping to HUGO
+<span class="st">     </span><span class="kw">mutate</span>( <span class="dt">gene_id =</span> <span class="kw">f</span>( gene_id ) ) %&gt;%<span class="st">       </span>## Clip gene ids to HUGO
+<span class="st">     </span><span class="kw">filter</span>( gene_id %in%<span class="st"> </span><span class="kw">names</span>(w) )            ## Reduce to the signature&#39;s gene set
+X</code></pre></div>
+<p>If the data for SLC35E2 has multiple entries, we will filter it by and keep only the first one.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">j &lt;-<span class="st"> </span><span class="kw">grep</span>( <span class="st">&quot;SLC35E2&quot;</span>, X[,<span class="dv">1</span>] )
+if( <span class="kw">length</span>(j) &gt;<span class="st"> </span><span class="dv">1</span> ) X &lt;-<span class="st"> </span>X[-j[-<span class="dv">1</span>],]</code></pre></div>
+<p>Convert the data frame <code>X</code> to a matrix. Rows are Gene id’s and columns are Gene Sets. Notice the the size of this matrix is now 11809 rows by 11069 columns.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rownames</span>(X) &lt;-<span class="st"> </span><span class="ot">NULL</span>
+X &lt;-<span class="st"> </span>X %&gt;%<span class="st"> </span>tibble::<span class="kw">column_to_rownames</span>( <span class="st">&quot;gene_id&quot;</span> ) %&gt;%<span class="st"> </span><span class="kw">as.matrix</span>()
+X[<span class="dv">1</span>:<span class="dv">3</span>,<span class="dv">1</span>:<span class="dv">3</span>]</code></pre></div>
+<p>Reduce the signature to the common set of genes.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stopifnot</span>( <span class="kw">all</span>( <span class="kw">rownames</span>(X) %in%<span class="st"> </span><span class="kw">names</span>(w) ) )
+w &lt;-<span class="st"> </span>w[ <span class="kw">rownames</span>(X) ]
+w[<span class="dv">1</span>:<span class="dv">5</span>]</code></pre></div>
+<p>Score the Matrix <code>X</code> using Spearman correlation.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">s &lt;-<span class="st"> </span><span class="kw">apply</span>( X, <span class="dv">2</span>, function(z) {<span class="kw">cor</span>( z, w, <span class="dt">method=</span><span class="st">&quot;sp&quot;</span>, <span class="dt">use=</span><span class="st">&quot;complete.obs&quot;</span> )} )
+s[<span class="dv">1</span>:<span class="dv">5</span>]</code></pre></div>
+<p>Scale the scores to be between 0 and 1</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">s &lt;-<span class="st"> </span>s -<span class="st"> </span><span class="kw">min</span>(s)
+s &lt;-<span class="st"> </span>s /<span class="st"> </span><span class="kw">max</span>(s)
+s[<span class="dv">1</span>:<span class="dv">5</span>]</code></pre></div>
+<p>Then output scores to a file mRNA_StemScore.tsv.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">write.table</span>( <span class="kw">cbind</span>(s), <span class="dt">file=</span>fnOut, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">quote=</span><span class="ot">FALSE</span>, <span class="dt">col.names=</span><span class="ot">FALSE</span> )</code></pre></div>
+<div id="entire-code-main.predict-function" class="section level3">
+<h3>Entire code: <code>main.predict</code> function</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Uses the signature stored in fnSig to score PanCan33 data and stores the result to fnOut
+main.predict &lt;-<span class="st"> </span>function( <span class="dt">fnSig =</span> <span class="st">&quot;pcbc-stemsig.tsv&quot;</span>, <span class="dt">fnOut =</span> <span class="st">&quot;mRNA_StemScore.tsv&quot;</span> )
+{
+  ## Load the signature
+  w &lt;-<span class="st"> </span><span class="kw">read.delim</span>( fnSig, <span class="dt">header=</span><span class="ot">FALSE</span>, <span class="dt">row.names=</span><span class="dv">1</span> ) %&gt;%<span class="st"> </span><span class="kw">as.matrix</span>() %&gt;%<span class="st"> </span><span class="kw">drop</span>()
+  
+  ## Reduces HUGO|POSITION gene IDs to just HUGO
+  f &lt;-<span class="st"> </span>function( v ) <span class="kw">unlist</span>( <span class="kw">lapply</span>( <span class="kw">strsplit</span>( v, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">|&quot;</span> ), <span class="st">&quot;[[&quot;</span>, <span class="dv">1</span> ) )
+  
+  s &lt;-<span class="st"> </span><span class="kw">synGet</span>( <span class="st">&quot;syn4976369&quot;</span>, <span class="dt">downloadLocation =</span> <span class="st">&quot;/data/pancan&quot;</span> )
+  X &lt;-<span class="st"> </span><span class="kw">read.delim</span>( s@filePath, <span class="dt">as.is=</span><span class="ot">TRUE</span>, <span class="dt">check.names=</span><span class="ot">FALSE</span> ) %&gt;%<span class="st">  </span>## Read the raw values
+<span class="st">    </span><span class="kw">filter</span>( !<span class="kw">grepl</span>( <span class="st">&quot;</span><span class="ch">\\</span><span class="st">?&quot;</span>, gene_id ) ) %&gt;%<span class="st">      </span>## Drop genes with no mapping to HUGO
+<span class="st">    </span><span class="kw">mutate</span>( <span class="dt">gene_id =</span> <span class="kw">f</span>( gene_id ) ) %&gt;%<span class="st">        </span>## Clip gene ids to HUGO
+<span class="st">    </span><span class="kw">filter</span>( gene_id %in%<span class="st"> </span><span class="kw">names</span>(w) )         ## Reduce to the signature&#39;s gene set
+  
+  ## SLC35E2 has multiple entries with the same HUGO id
+  ## Keep the first entry only
+  j &lt;-<span class="st"> </span><span class="kw">grep</span>( <span class="st">&quot;SLC35E2&quot;</span>, X[,<span class="dv">1</span>] )
+  if( <span class="kw">length</span>(j) &gt;<span class="st"> </span><span class="dv">1</span> )
+    X &lt;-<span class="st"> </span>X[-j[-<span class="dv">1</span>],]
+  
+  ## Convert to a matrix
+  <span class="kw">rownames</span>(X) &lt;-<span class="st"> </span><span class="ot">NULL</span>
+  X &lt;-<span class="st"> </span>X %&gt;%<span class="st"> </span>tibble::<span class="kw">column_to_rownames</span>( <span class="st">&quot;gene_id&quot;</span> ) %&gt;%<span class="st"> </span><span class="kw">as.matrix</span>()
+  
+  ## Reduce the signature to the common set of genes
+  <span class="kw">stopifnot</span>( <span class="kw">all</span>( <span class="kw">rownames</span>(X) %in%<span class="st"> </span><span class="kw">names</span>(w) ) )
+  w &lt;-<span class="st"> </span>w[ <span class="kw">rownames</span>(X) ]
+  
+  ####### Score via Spearman correlation
+  s &lt;-<span class="st"> </span><span class="kw">apply</span>( X, <span class="dv">2</span>, function(z) {<span class="kw">cor</span>( z, w, <span class="dt">method =</span> <span class="st">&quot;sp&quot;</span>, <span class="dt">use =</span> <span class="st">&quot;complete.obs&quot;</span> )} )
+  
+  ## Scale the scores to be between 0 and 1
+  s &lt;-<span class="st"> </span>s -<span class="st"> </span><span class="kw">min</span>(s)
+  s &lt;-<span class="st"> </span>s /<span class="st"> </span><span class="kw">max</span>(s)
+  
+  <span class="kw">write.table</span>(<span class="kw">cbind</span>(s), <span class="dt">file =</span> fnOut, <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">quote =</span> <span class="ot">FALSE</span>, <span class="dt">col.names =</span> <span class="ot">FALSE</span>)
+}</code></pre></div>
+</div>
+</div>
+<div id="executing-complete-analysis" class="section level2">
+<h2>Executing complete analysis</h2>
+<p>Once you have created all of the previous function (<code>main.train</code>, <code>main.predict</code>), create the <code>main</code> function which wraps the all them. This function will train and apply the full and reduced signatures. After you have have created all functions, run the <code>main</code> function to preform the full analysis.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">main &lt;-<span class="st"> </span>function()
+{
+  <span class="co"># Train a full signature, which will be saved to pcbc-stemsig.tsv</span>
+  <span class="kw">main.train</span>()
+  
+  <span class="co"># Apply the full signature to score the entire PanCan33 cohort</span>
+  <span class="kw">main.predict</span>()
+}</code></pre></div>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>We demonstrated how to derive a gene signature capable of detecting stem cell states and applied this signature to reproduce <em>mRNAsi</em>. The signature itself was stored into a file (<code>pcbc-stemsig.tsv</code> by default), allowing for additional downstream analyses, like the Gene Set Enrichment Analysis. The robustness of the signature was estimated through leave-one-out cross-validation that is automatically performed by the <code>main.train()</code> function. After stepping through the workflow, we encourage the reader to replace PanCan33 dataset with their own samples and modify <code>main.predict()</code> to derive the corresponding <em>mRNAsi</em>.</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-durinck2005biomart">
+<p>Durinck, Steffen, Yves Moreau, Arek Kasprzyk, Sean Davis, Bart De Moor, Alvis Brazma, and Wolfgang Huber. 2005. “BioMart and Bioconductor: A Powerful Link Between Biological Databases and Microarray Data Analysis.” <em>Bioinformatics</em> 21 (16). Oxford Univ Press: 3439–40.</p>
+</div>
+<div id="ref-durinck2009mapping">
+<p>Durinck, Steffen, Paul T Spellman, Ewan Birney, and Wolfgang Huber. 2009. “Mapping Identifiers for the Integration of Genomic Datasets with the R/Bioconductor Package BiomaRt.” <em>Nature Protocols</em> 4 (8). Nature Publishing Group: 1184–91.</p>
+</div>
+<div id="ref-sokolov2016pathway">
+<p>Sokolov, Artem, Daniel E Carlin, Evan O Paull, Robert Baertsch, and Joshua M Stuart. 2016. “Pathway-Based Genomics Prediction Using Generalized Elastic Net.” <em>PLoS Comput Biol</em> 12 (3). Public Library of Science: e1004790.</p>
+</div>
+<div id="ref-yates2015ensembl">
+<p>Yates, Andrew, Wasiu Akanni, M Ridwan Amode, Daniel Barrell, Konstantinos Billis, Denise Carvalho-Silva, Carla Cummins, et al. 2015. “Ensembl 2016.” <em>Nucleic Acids Research</em>. Oxford Univ Press, gkv1157.</p>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
