@@ -15,7 +15,7 @@ editor_options:
 
 # Introduction
 
-This document contains workflows, explaining how to download the PCBC and TCGA PanCan33 datasets, train a stemness signature and apply it to score TCGA samples. The mRNAsi section contains the messenger RNA stemness index workflow; while the mDNAsi contains the methylated DNA stemness index workflow.
+This document contains workflows, explaining how to download stem/progenitor cells from the Progenitor Cell Biology Consortium(PCBC) and TCGA PanCan33 datasets, train a stemness signature using normal stem cells, and apply it to score TCGA tumor samples. The mRNAsi section contains the RNA expression-based stemness index workflow; while the mDNAsi contains the DNA methylation-based stemness index workflow.
 
 
 # Authors
