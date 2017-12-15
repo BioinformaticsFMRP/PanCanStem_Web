@@ -68,7 +68,7 @@ shinyServer(function(input, output,session) {
               extensions = c('Buttons',"FixedHeader"),
               class = 'cell-border stripe',
               options = list(dom = 'Blfrtip',
-                             buttons =  c('copy', 'csv', 'excel', , 'colvis'),
+                             buttons =  c('copy', 'csv', 'excel', 'colvis'),
                              fixedHeader = TRUE,
                              pageLength = 5,
                              scrollX = TRUE,
