@@ -228,10 +228,20 @@ shinyServer(function(input, output,session) {
           geom_hline(yintercept = 0) +
           scale_color_manual(values = c("black","red")) +
           labs(colour = "Significant (padj<0.05)", 
-               title = paste0("DNAss vs RNAss Mutation Enrichment (",input$cancertype,")"), 
                x = "DNAss Enrichment Score (NES)", 
                y = "RNAss Enrichment Score (NES)") +
-          theme_bw())
+          theme_bw() + 
+          theme(legend.position="bottom")
+        ) %>%   
+          add_annotations( text="Significant (padj<0.05)", 
+                                 xref="paper", yref="paper",
+                                 x=0, xanchor="left",
+                                 y=-0.2, yanchor="bottom",    # Same y as legend below
+                                 legendtitle=TRUE, showarrow=FALSE ) %>%
+          layout(title = paste0("DNAss vs RNAss Mutation Enrichment (",input$cancertype,")"),
+                 #xaxis = list(showticklabels = FALSE),
+                 legend = list(orientation = "h",
+                               y = -0.2, x = 0.0))
         p$elementId <- NULL
         p
       } else {
