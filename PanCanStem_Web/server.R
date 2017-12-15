@@ -70,9 +70,9 @@ shinyServer(function(input, output,session) {
               options = list(dom = 'Blfrtip',
                              buttons =  c('copy', 'csv', 'excel', 'colvis'),
                              fixedHeader = TRUE,
-                             pageLength = 5,
+                             pageLength = 20,
                              scrollX = TRUE,
-                             lengthMenu = list(c(5, 20, 50, -1), c('5', '20','50','All'))
+                             lengthMenu = list(c(10, 20, 50, -1), c('10', '20','50','All'))
               ),
               filter = 'top')  %>% 
       formatStyle(
@@ -86,7 +86,7 @@ shinyServer(function(input, output,session) {
         )
       )
   )
-
+  
   updateSelectizeInput(session, 'cancertype', choices = {
     sort(unique(as.character(getTCGAdisease())))
   }, server = TRUE)
@@ -221,23 +221,27 @@ shinyServer(function(input, output,session) {
     output$butterflyPlot <- renderPlotly({
       if(!is.null(input$cancertype) & input$cancertype != "") {
         p <- ggplotly(
-        ggplot(pd.merg[pd.merg$pathway.RNA %in% "Mutant" & pd.merg$cancer.type.DNA %in% input$cancertype,], 
-               aes(x = NES.DNA, y = NES.RNA,tooltip = ID.RNA, color = c(padj.DNA < 0.05 | padj.RNA < 0.05))) + 
-          geom_point() + 
-          geom_vline(xintercept = 0) +
-          geom_hline(yintercept = 0) +
-          scale_color_manual(values = c("black","red")) +
-          labs(colour = "Significant (padj<0.05)", 
-               x = "DNAss Enrichment Score (NES)", 
-               y = "RNAss Enrichment Score (NES)") +
-          theme_bw() + 
-          theme(legend.position="bottom")
+          ggplot(pd.merg[pd.merg$pathway.RNA %in% "Mutant" & pd.merg$cancer.type.DNA %in% input$cancertype,], 
+                 aes(x = NES.DNA, 
+                     y = NES.RNA,tooltip = ID.RNA, 
+                     color = c(padj.DNA < 0.05 | padj.RNA < 0.05))) + 
+            geom_point() + 
+            geom_vline(xintercept = 0) +
+            geom_hline(yintercept = 0) +
+            scale_color_manual(values = c("black","red")) +
+            labs(colour = "Significant (padj<0.05)", 
+                 x = "DNAss Enrichment Score (NES)", 
+                 y = "RNAss Enrichment Score (NES)") +
+            theme_bw() + 
+            theme(legend.position="bottom")
         ) %>%   
           add_annotations( text="Significant (padj<0.05)", 
-                                 xref="paper", yref="paper",
-                                 x=0, xanchor="left",
-                                 y=-0.2, yanchor="bottom",    # Same y as legend below
-                                 legendtitle=TRUE, showarrow=FALSE ) %>%
+                           xref="paper", 
+                           yref="paper",
+                           x=0, 
+                           xanchor="left",
+                           y=-0.2, yanchor="bottom",    # Same y as legend below
+                           legendtitle=TRUE, showarrow=FALSE ) %>%
           layout(title = paste0("DNAss vs RNAss Mutation Enrichment (",input$cancertype,")"),
                  #xaxis = list(showticklabels = FALSE),
                  legend = list(orientation = "h",

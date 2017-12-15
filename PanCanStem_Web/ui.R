@@ -42,65 +42,78 @@ body <- dashboardBody(
         .skin-blue .main-header .logo {
           background-color: #3c8dbc;
         }
+       .content-wrapper, .right-side {
+          background-color: #ffffff;
+       }
+     .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover {
+    color: #f9f9f9;
+    cursor: default;
+    background-color: #337ab7;
+    border: 1px solid #ddd;
+    border-bottom-color: transparent;
+}
         .skin-blue .main-header .logo:hover {
           background-color: #3c8dbc;
         }
       '))))
     )))),
   fluidRow(
-    column(width = 9,
-           bsAlert("message"),
-           box(width = NULL, solidHeader = TRUE,
-               DT::dataTableOutput('tbl')
-           ),
-           box(width = NULL, solidHeader = TRUE,
-               title = "Enrichment analysis for DNAss and RNAss acrosss Clinical and Molecular phenotypes (Mutation/Molecular subtypes)",
-               plotlyOutput("butterflyPlot")
-           ),
-           box(width = NULL, solidHeader = TRUE,
-               title = "DNA",
-               plotOutput("plotGseaTableDNA"),
-               plotOutput("plotEnrichmentDNA")
-           ),
-           box(width = NULL, solidHeader = TRUE,
-               title = "RNA",
-               plotOutput("plotGseaTableRNA"),
-               plotOutput("plotEnrichmentRNA")
-           )
-    ),
-    column(width = 3,
-           box(width = NULL, 
-               selectizeInput('cancertype',
-                              'Cancer type',
-                              NULL,
-                              multiple = FALSE),
-               selectizeInput('feature',
-                              'Feature',
-                              NULL,
-                              multiple = FALSE),
-               actionButton("calculate",
-                            "Calculate",
-                            style = "background-color: #000080;
+    bsAlert("message"),
+    tabsetPanel(type = "tabs",
+                tabPanel("Table", DT::dataTableOutput('tbl')),
+                tabPanel("Plots",
+                         column(width = 9,
+                                
+                                box(width = NULL, solidHeader = TRUE,
+                                    title = "Enrichment analysis for DNAss and RNAss acrosss Clinical and Molecular phenotypes (Mutation/Molecular subtypes)",
+                                    plotlyOutput("butterflyPlot")
+                                ),
+                                box(width = NULL, solidHeader = TRUE,
+                                    title = "DNA",
+                                    plotOutput("plotGseaTableDNA"),
+                                    plotOutput("plotEnrichmentDNA")
+                                ),
+                                box(width = NULL, solidHeader = TRUE,
+                                    title = "RNA",
+                                    plotOutput("plotGseaTableRNA"),
+                                    plotOutput("plotEnrichmentRNA")
+                                )
+                         ),
+                         column(width = 3,
+                                box(width = NULL, 
+                                    selectizeInput('cancertype',
+                                                   'Cancer type',
+                                                   NULL,
+                                                   multiple = FALSE),
+                                    selectizeInput('feature',
+                                                   'Feature',
+                                                   NULL,
+                                                   multiple = FALSE),
+                                    actionButton("calculate",
+                                                 "Calculate",
+                                                 style = "background-color: #000080;
                             color: #FFFFFF;
                             margin-left: auto;
                             margin-right: auto;
                             width: 100%",
-                            icon = icon("flask"))
-           ),
-           box(width = NULL, 
-               selectizeInput('pathway',
-                              'Pathway',
-                              NULL,
-                              multiple = FALSE),
-               actionButton("plot",
-                            "Plot GSEA enrichment",
-                            style = "background-color: #000080;
+                                                 icon = icon("flask"))
+                                ),
+                                box(width = NULL, 
+                                    selectizeInput('pathway',
+                                                   'Pathway',
+                                                   NULL,
+                                                   multiple = FALSE),
+                                    actionButton("plot",
+                                                 "Plot GSEA enrichment",
+                                                 style = "background-color: #000080;
                             color: #FFFFFF;
                             margin-left: auto;
                             margin-right: auto;
                             width: 100%",
-                            icon = icon("flask"))
-           )
+                                                 icon = icon("flask"))
+                                )
+                         )
+                )
     )
   )
 )
@@ -110,7 +123,7 @@ shinyUI(
     useShinyjs(),
     div(id = "loading-content",
         img(src = "loading.gif")
-        ),
+    ),
     dashboardPage(
       skin = "blue",
       header,
