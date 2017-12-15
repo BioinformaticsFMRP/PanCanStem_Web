@@ -65,8 +65,16 @@ shinyServer(function(input, output,session) {
   
   output$tbl = DT::renderDataTable(
     datatable(pd.all,
-              filter = 'top', 
-              options = list(scrollX = TRUE, pageLength = 5))  %>% 
+              extensions = c('Buttons',"FixedHeader"),
+              class = 'cell-border stripe',
+              options = list(dom = 'Blfrtip',
+                             buttons =  c('copy', 'csv', 'excel', 'pdf', 'print', 'colvis'),
+                             fixedHeader = TRUE,
+                             pageLength = 20,
+                             scrollX = TRUE,
+                             lengthMenu = list(c(10, 20, 50, -1), c('10', '20','50','All'))
+              ),
+              filter = 'top')  %>% 
       formatStyle(
         'padj',
         backgroundColor = styleInterval(c(0.5), c('red', 'white'))
@@ -110,7 +118,13 @@ shinyServer(function(input, output,session) {
   volcano.values <- reactive({
     closeAlert(session, "Alert")
     if(input$calculate){
+      
       feature <- isolate({input$feature})
+      if(is.null(feature) || feature == ""){ 
+        createAlert(session, "message", "Alert", title = "Error", style =  "danger",
+                    content = "Please select Feature", append = FALSE)
+        return(NULL)
+      }
       if(feature %in% colnames(pd.maf.RNA)) {
         pd <- pd.maf.RNA
         nperm <- 1000
@@ -175,6 +189,10 @@ shinyServer(function(input, output,session) {
           return(NULL)
         }
         plotEnrichment(ret$pathways.dna[[feature.level]], ret$stats.dna) + labs(title=input$pathway.dna)
+      } else { 
+        createAlert(session, "message", "Alert", title = "Error", style =  "danger",
+                    content = "Please execute Gene Set Enrichment Analysis again.", append = FALSE)
+        return(NULL)
       }
     })
   })
@@ -196,7 +214,7 @@ shinyServer(function(input, output,session) {
   observeEvent(input$calculate , {
     output$plotGseaTableRNA <- renderPlot({
       ret <- volcano.values()
-      if(!is.null(ret)) plotGseaTable(ret$pathways.rna, ret$stats.rna, ret$result.rna,  gseaParam = 0.5)
+      if(!is.null(ret)) plotGseaTable(ret$pathways.rna, ret$stats.rna, ret$result.rna,  gseaParam = 0.5,colwidths= c(1,5,1,1,1))
     })
   })
   observeEvent(input$cancertype , {
@@ -228,7 +246,7 @@ shinyServer(function(input, output,session) {
   observeEvent(input$calculate , {
     output$plotGseaTableDNA  <- renderPlot({
       ret <- volcano.values()
-      if(!is.null(ret)) plotGseaTable(ret$pathways.dna, ret$stats.dna, ret$result.dna,  gseaParam = 0.5)
+      if(!is.null(ret)) plotGseaTable(ret$pathways.dna, ret$stats.dna, ret$result.dna,  gseaParam = 0.5,colwidths= c(1,5,1,1,1))
     })
   })
   
