@@ -68,11 +68,11 @@ shinyServer(function(input, output,session) {
               extensions = c('Buttons',"FixedHeader"),
               class = 'cell-border stripe',
               options = list(dom = 'Blfrtip',
-                             buttons =  c('copy', 'csv', 'excel', 'pdf', 'print', 'colvis'),
+                             buttons =  c('copy', 'csv', 'excel', , 'colvis'),
                              fixedHeader = TRUE,
-                             pageLength = 20,
+                             pageLength = 5,
                              scrollX = TRUE,
-                             lengthMenu = list(c(10, 20, 50, -1), c('10', '20','50','All'))
+                             lengthMenu = list(c(5, 20, 50, -1), c('5', '20','50','All'))
               ),
               filter = 'top')  %>% 
       formatStyle(
