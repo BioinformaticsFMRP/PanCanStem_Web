@@ -3,16 +3,6 @@ library(shiny)
 library(shinyjs)
 library(shinyBS)
 library(plotly)
-pdf(NULL)
-
-getTCGAdisease <- function(){
-  projects <- TCGAbiolinks:::getGDCprojects()
-  disease <-  projects$project_id
-  idx <- grep("disease_type",colnames(projects))
-  names(disease) <-  paste0(projects[[idx]], " (",disease,")")
-  disease <- disease[sort(names(disease))]
-  return(disease)
-}
 
 #' busyIndicator
 #'
@@ -82,7 +72,7 @@ body <- dashboardBody(
            box(width = NULL, 
                selectizeInput('cancertype',
                               'Cancer type',
-                              getTCGAdisease(),
+                              NULL,
                               multiple = FALSE),
                selectizeInput('feature',
                               'Feature',
