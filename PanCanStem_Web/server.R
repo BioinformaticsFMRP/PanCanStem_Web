@@ -19,7 +19,7 @@ load("data/pd.450.prim_20170207.Rda")
 load("data/pd.maf.450.Rda")
 load("data/pd.maf.RNA.Rda")
 load("data/pd.mRNA.prim_20170208.Rda")
-load("data/pd.all.Rda")
+load("data/pd.all.v2.Rda")
 load("data/pd.merg.Rda")
 load("data/features.Rda")
 set.seed(10)
@@ -68,7 +68,7 @@ shinyServer(function(input, output,session) {
               extensions = c('Buttons',"FixedHeader"),
               class = 'cell-border stripe',
               options = list(dom = 'Blfrtip',
-                             buttons =  c('copy', 'csv', 'excel', , 'colvis'),
+                             buttons =  c('copy', 'csv', 'excel', 'colvis'),
                              fixedHeader = TRUE,
                              pageLength = 5,
                              scrollX = TRUE,
