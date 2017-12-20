@@ -63,24 +63,29 @@ body <- dashboardBody(
                 tabPanel("Table", DT::dataTableOutput('tbl')),
                 tabPanel("Plots",
                          column(width = 9,
-                                
-                                box(width = NULL, solidHeader = TRUE,
-                                    title = "Enrichment analysis for DNAss and RNAss acrosss Clinical and Molecular phenotypes (Mutation/Molecular subtypes)",
-                                    plotlyOutput("butterflyPlot")
-                                ),
-                                box(width = NULL, solidHeader = TRUE,
-                                    title = "Box plot",
-                                    plotOutput("boxplot")
-                                ),
-                                box(width = NULL, solidHeader = TRUE,
-                                    title = "DNA",
-                                    plotOutput("plotGseaTableDNA"),
-                                    plotOutput("plotEnrichmentDNA")
-                                ),
-                                box(width = NULL, solidHeader = TRUE,
-                                    title = "RNA",
-                                    plotOutput("plotGseaTableRNA"),
-                                    plotOutput("plotEnrichmentRNA")
+                                tabsetPanel(type = "tabs",
+                                            tabPanel("Scatter Plot",            
+                                                     box(width = NULL, solidHeader = TRUE,
+                                                         title = "Enrichment analysis for mDNAsi and mRNAsi acrosss Clinical and Molecular phenotypes (Mutation/Molecular subtypes)",
+                                                         plotlyOutput("butterflyPlot")
+                                                     )),
+                                            tabPanel("Box plots",
+                                                     box(width = NULL, solidHeader = TRUE,
+                                                         title = "Box plot",
+                                                         plotOutput("boxplot")
+                                                     )),
+                                            tabPanel("GSEA plots",
+                                                     box(width = NULL, solidHeader = TRUE,
+                                                         title = "DNA",
+                                                         plotOutput("plotGseaTableDNA"),
+                                                         plotOutput("plotEnrichmentDNA")
+                                                     ),
+                                                     box(width = NULL, solidHeader = TRUE,
+                                                         title = "RNA",
+                                                         plotOutput("plotGseaTableRNA"),
+                                                         plotOutput("plotEnrichmentRNA")
+                                                     )
+                                            )
                                 )
                          ),
                          column(width = 3,
@@ -111,6 +116,7 @@ body <- dashboardBody(
                                                  icon = icon("flask"))
                                 )
                          )
+                         
                          
                 )
     )

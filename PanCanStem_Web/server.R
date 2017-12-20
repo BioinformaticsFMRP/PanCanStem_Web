@@ -182,34 +182,22 @@ shinyServer(function(input, output,session) {
   observeEvent(input$calculate , {
     output$plotEnrichmentDNA <- renderPlot({
       ret <- volcano.values()
-      feature.level <- isolate({input$pathway})
-      if(!is.null(feature.level) & feature.level != "") {
-        if(!feature.level %in% names(ret$pathways.dna)){ 
-          createAlert(session, "message", "Alert", title = "Error", style =  "danger",
-                      content = "Please execute Gene Set Enrichment Analysis again.", append = FALSE)
-          return(NULL)
-        }
-        p1 <- plotEnrichment(ret$pathways.dna[["WT"]], ret$stats.dna) 
-        p2 <- plotEnrichment(ret$pathways.dna[["Mutant"]], ret$stats.dna) 
-        p <- ggarrange(p1,p2, labels = c("WT","Mutant"),
-                       ncol = 2)
-        p
-      } else { 
-        createAlert(session, "message", "Alert", title = "Error", style =  "danger",
-                    content = "Please execute Gene Set Enrichment Analysis again.", append = FALSE)
-        return(NULL)
-      }
+      p1 <- plotEnrichment(ret$pathways.dna[["WT"]], ret$stats.dna) 
+      p2 <- plotEnrichment(ret$pathways.dna[["Mutant"]], ret$stats.dna) 
+      p <- ggarrange(p1,p2, labels = c("WT","Mutant"),
+                     ncol = 2)
+      p
     })
   })
   
   observeEvent(input$calculate , {
     output$plotEnrichmentRNA <- renderPlot({
       ret <- volcano.values()
-        p1 <- plotEnrichment(ret$pathways.rna[["WT"]], ret$stats.rna)
-        p2 <- plotEnrichment(ret$pathways.rna[["Mutant"]], ret$stats.rna) 
-        p <- ggarrange(p1,p2, labels = c("WT","Mutant"),
-                       ncol = 2)
-        p
+      p1 <- plotEnrichment(ret$pathways.rna[["WT"]], ret$stats.rna)
+      p2 <- plotEnrichment(ret$pathways.rna[["Mutant"]], ret$stats.rna) 
+      p <- ggarrange(p1,p2, labels = c("WT","Mutant"),
+                     ncol = 2)
+      p
     })
   })
   observeEvent(input$calculate , {
@@ -262,52 +250,52 @@ shinyServer(function(input, output,session) {
     output$boxplot <- renderPlot({
       closeAlert(session, "Alert")
       if(!is.null(input$cancertype) & input$cancertype != "" & !is.null(input$feature) & input$feature != "") {
-          
-          pd.dna <- as.data.frame(merge(pd.450.prim,pd.maf.450))
-          plot <- pd.dna[pd.dna$cancer.type %in% input$cancertype, c("mDNAsi",input$feature)]
-          colnames(plot) <- c("mDNAsi","feature")
-          plot$feature <- factor(plot$feature, levels = c("WT","Mutant"))
-          plot <- plot[!is.na(plot$feature),]
-          theme_set(theme_bw())
-          p1 <- ggplot(plot, aes(feature, mDNAsi)) +
-            geom_boxplot(aes(fill = factor(feature)), notchwidth=0.25, colour = "black",outlier.shape = NA) + 
-            scale_fill_manual(values=c( "grey", "green4")) +   
-            geom_jitter(position = position_jitter(width = .1), size=1, colour = "black") + 
-            theme(axis.title.x = element_blank(),
-                  axis.text.x  = element_text(face="bold", angle=45, vjust=1,hjust=1, size=12), 
-                  axis.title.y = element_text(face="bold", size=12),
-                  axis.text.y  = element_text(face="bold", size=12),
-                  plot.title = element_text(face="bold", size = rel(2)),
-                  panel.grid.major = element_blank(), 
-                  panel.grid.minor = element_blank(),
-                  strip.text.x = element_text(size=12, face="bold"),
-                  legend.position="none") +
-            ylab("mDNAsi") +
-            ggtitle(input$feature) 
-          
-          pd.rna <- as.data.frame(merge(pd.mRNA.prim,pd.maf.450))
-          plot <- pd.dna[pd.dna$cancer.type %in% input$cancertype, c("mRNAsi",input$feature)]
-          colnames(plot) <- c("mRNAsi","feature")
-          plot$feature <- factor(plot$feature, levels = c("WT","Mutant"))
-          plot <- plot[!is.na(plot$feature),]
-          theme_set(theme_bw())
-          p2 <- ggplot(plot, aes(feature, mRNAsi)) +
-            geom_boxplot(aes(fill = factor(feature)), notchwidth=0.25, colour = "black",outlier.shape = NA) + 
-            scale_fill_manual(values=c( "grey", "green4")) +   
-            geom_jitter(position = position_jitter(width = .1), size=1, colour = "black") + 
-            theme(axis.title.x = element_blank(),
-                  axis.text.x  = element_text(face="bold", angle=45, vjust=1,hjust=1, size=12), 
-                  axis.title.y = element_text(face="bold", size=12),
-                  axis.text.y  = element_text(face="bold", size=12),
-                  plot.title = element_text(face="bold", size = rel(2)),
-                  panel.grid.major = element_blank(), 
-                  panel.grid.minor = element_blank(),
-                  strip.text.x = element_text(size=12, face="bold"),
-                  legend.position="none") +
-            ylab("mRNAsi")  
-          p <- ggarrange(p1,p2, 
-                         ncol = 2)
-          p
+        
+        pd.dna <- as.data.frame(merge(pd.450.prim,pd.maf.450))
+        plot <- pd.dna[pd.dna$cancer.type %in% input$cancertype, c("mDNAsi",input$feature)]
+        colnames(plot) <- c("mDNAsi","feature")
+        plot$feature <- factor(plot$feature, levels = c("WT","Mutant"))
+        plot <- plot[!is.na(plot$feature),]
+        theme_set(theme_bw())
+        p1 <- ggplot(plot, aes(feature, mDNAsi)) +
+          geom_boxplot(aes(fill = factor(feature)), notchwidth=0.25, colour = "black",outlier.shape = NA) + 
+          scale_fill_manual(values=c( "grey", "green4")) +   
+          geom_jitter(position = position_jitter(width = .1), size=1, colour = "black") + 
+          theme(axis.title.x = element_blank(),
+                axis.text.x  = element_text(face="bold", angle=45, vjust=1,hjust=1, size=12), 
+                axis.title.y = element_text(face="bold", size=12),
+                axis.text.y  = element_text(face="bold", size=12),
+                plot.title = element_text(face="bold", size = rel(2)),
+                panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank(),
+                strip.text.x = element_text(size=12, face="bold"),
+                legend.position="none") +
+          ylab("mDNAsi") +
+          ggtitle(input$feature) 
+        
+        pd.rna <- as.data.frame(merge(pd.mRNA.prim,pd.maf.450))
+        plot <- pd.dna[pd.dna$cancer.type %in% input$cancertype, c("mRNAsi",input$feature)]
+        colnames(plot) <- c("mRNAsi","feature")
+        plot$feature <- factor(plot$feature, levels = c("WT","Mutant"))
+        plot <- plot[!is.na(plot$feature),]
+        theme_set(theme_bw())
+        p2 <- ggplot(plot, aes(feature, mRNAsi)) +
+          geom_boxplot(aes(fill = factor(feature)), notchwidth=0.25, colour = "black",outlier.shape = NA) + 
+          scale_fill_manual(values=c( "grey", "green4")) +   
+          geom_jitter(position = position_jitter(width = .1), size=1, colour = "black") + 
+          theme(axis.title.x = element_blank(),
+                axis.text.x  = element_text(face="bold", angle=45, vjust=1,hjust=1, size=12), 
+                axis.title.y = element_text(face="bold", size=12),
+                axis.text.y  = element_text(face="bold", size=12),
+                plot.title = element_text(face="bold", size = rel(2)),
+                panel.grid.major = element_blank(), 
+                panel.grid.minor = element_blank(),
+                strip.text.x = element_text(size=12, face="bold"),
+                legend.position="none") +
+          ylab("mRNAsi")  
+        p <- ggarrange(p1,p2, 
+                       ncol = 2)
+        p
       } else {
         createAlert(session, "message", "Alert", title = "Error", style =  "danger",
                     content = "Select cancer type and feature", append = FALSE)
