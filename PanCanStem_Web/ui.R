@@ -69,6 +69,10 @@ body <- dashboardBody(
                                     plotlyOutput("butterflyPlot")
                                 ),
                                 box(width = NULL, solidHeader = TRUE,
+                                    title = "Box plot",
+                                    plotOutput("boxplot")
+                                ),
+                                box(width = NULL, solidHeader = TRUE,
                                     title = "DNA",
                                     plotOutput("plotGseaTableDNA"),
                                     plotOutput("plotEnrichmentDNA")
@@ -89,6 +93,14 @@ body <- dashboardBody(
                                                    'Feature',
                                                    NULL,
                                                    multiple = FALSE),
+                                    actionButton("boxplotBt",
+                                                 "Plot boxplot",
+                                                 style = "background-color: #000080;
+                                                 color: #FFFFFF;
+                                                 margin-left: auto;
+                                                 margin-right: auto;
+                                                 width: 100%",
+                                                 icon = icon("flask")),
                                     actionButton("calculate",
                                                  "Calculate",
                                                  style = "background-color: #000080;
