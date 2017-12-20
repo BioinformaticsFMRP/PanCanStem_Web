@@ -246,7 +246,7 @@ shinyServer(function(input, output,session) {
     })
   })
   
-  observeEvent(input$boxplotBt , {
+  observeEvent(input$feature , {
     output$boxplot <- renderPlot({
       closeAlert(session, "Alert")
       if(!is.null(input$cancertype) & input$cancertype != "" & !is.null(input$feature) & input$feature != "") {

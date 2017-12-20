@@ -75,15 +75,21 @@ body <- dashboardBody(
                                                          plotOutput("boxplot")
                                                      )),
                                             tabPanel("GSEA plots",
-                                                     box(width = NULL, solidHeader = TRUE,
-                                                         title = "DNA",
-                                                         plotOutput("plotGseaTableDNA"),
-                                                         plotOutput("plotEnrichmentDNA")
-                                                     ),
-                                                     box(width = NULL, solidHeader = TRUE,
-                                                         title = "RNA",
-                                                         plotOutput("plotGseaTableRNA"),
-                                                         plotOutput("plotEnrichmentRNA")
+                                                     tabsetPanel(type = "tabs",
+                                                                 tabPanel("DNA",
+                                                                          
+                                                                          box(width = NULL, solidHeader = TRUE,
+                                                                              title = "DNA",
+                                                                              plotOutput("plotGseaTableDNA"),
+                                                                              plotOutput("plotEnrichmentDNA")
+                                                                          )),
+                                                                 tabPanel("DNA",
+                                                                          
+                                                                          box(width = NULL, solidHeader = TRUE,
+                                                                              title = "RNA",
+                                                                              plotOutput("plotGseaTableRNA"),
+                                                                              plotOutput("plotEnrichmentRNA")
+                                                                          ))
                                                      )
                                             )
                                 )
@@ -98,14 +104,6 @@ body <- dashboardBody(
                                                    'Feature',
                                                    NULL,
                                                    multiple = FALSE),
-                                    actionButton("boxplotBt",
-                                                 "Plot boxplot",
-                                                 style = "background-color: #000080;
-                                                 color: #FFFFFF;
-                                                 margin-left: auto;
-                                                 margin-right: auto;
-                                                 width: 100%",
-                                                 icon = icon("picture-o")),
                                     actionButton("calculate",
                                                  "Plot GSEA and table of enrichment",
                                                  style = "background-color: #000080;
