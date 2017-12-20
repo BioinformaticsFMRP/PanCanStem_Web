@@ -100,9 +100,9 @@ body <- dashboardBody(
                                                  margin-left: auto;
                                                  margin-right: auto;
                                                  width: 100%",
-                                                 icon = icon("flask")),
+                                                 icon = icon("picture-o")),
                                     actionButton("calculate",
-                                                 "Calculate",
+                                                 "Plots table of enrichment graphs",
                                                  style = "background-color: #000080;
                             color: #FFFFFF;
                             margin-left: auto;
