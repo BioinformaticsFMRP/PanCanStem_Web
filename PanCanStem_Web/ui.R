@@ -102,21 +102,7 @@ body <- dashboardBody(
                                                  width: 100%",
                                                  icon = icon("picture-o")),
                                     actionButton("calculate",
-                                                 "Plots table of enrichment graphs",
-                                                 style = "background-color: #000080;
-                            color: #FFFFFF;
-                            margin-left: auto;
-                            margin-right: auto;
-                            width: 100%",
-                                                 icon = icon("flask"))
-                                ),
-                                box(width = NULL, 
-                                    selectizeInput('pathway',
-                                                   'Pathway',
-                                                   NULL,
-                                                   multiple = FALSE),
-                                    actionButton("plot",
-                                                 "Plot GSEA enrichment",
+                                                 "Plot GSEA and table of enrichment",
                                                  style = "background-color: #000080;
                             color: #FFFFFF;
                             margin-left: auto;
@@ -125,6 +111,7 @@ body <- dashboardBody(
                                                  icon = icon("flask"))
                                 )
                          )
+                         
                 )
     )
   )

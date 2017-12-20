@@ -179,7 +179,7 @@ shinyServer(function(input, output,session) {
     }
   })
   
-  observeEvent(input$plot , {
+  observeEvent(input$calculate , {
     output$plotEnrichmentDNA <- renderPlot({
       ret <- volcano.values()
       feature.level <- isolate({input$pathway})
@@ -189,7 +189,11 @@ shinyServer(function(input, output,session) {
                       content = "Please execute Gene Set Enrichment Analysis again.", append = FALSE)
           return(NULL)
         }
-        plotEnrichment(ret$pathways.dna[[feature.level]], ret$stats.dna) + labs(title=input$pathway.dna)
+        p1 <- plotEnrichment(ret$pathways.dna[["WT"]], ret$stats.dna) 
+        p2 <- plotEnrichment(ret$pathways.dna[["Mutant"]], ret$stats.dna) 
+        p <- ggarrange(p1,p2, labels = c("WT","Mutant"),
+                       ncol = 2)
+        p
       } else { 
         createAlert(session, "message", "Alert", title = "Error", style =  "danger",
                     content = "Please execute Gene Set Enrichment Analysis again.", append = FALSE)
@@ -198,18 +202,14 @@ shinyServer(function(input, output,session) {
     })
   })
   
-  observeEvent(input$plot , {
+  observeEvent(input$calculate , {
     output$plotEnrichmentRNA <- renderPlot({
       ret <- volcano.values()
-      feature.level <- isolate({input$pathway})
-      if(!is.null(feature.level) & feature.level != "") {
-        if(!feature.level %in% names(ret$pathways.rna)){ 
-          createAlert(session, "message", "Alert", title = "Error", style =  "danger",
-                      content = "Please execute Gene Set Enrichment Analysis again.", append = FALSE)
-          return(NULL)
-        }
-        plotEnrichment(ret$pathways.rna[[feature.level]], ret$stats.rna) + labs(title=input$pathway.rna)
-      }
+        p1 <- plotEnrichment(ret$pathways.rna[["WT"]], ret$stats.rna)
+        p2 <- plotEnrichment(ret$pathways.rna[["Mutant"]], ret$stats.rna) 
+        p <- ggarrange(p1,p2, labels = c("WT","Mutant"),
+                       ncol = 2)
+        p
     })
   })
   observeEvent(input$calculate , {
