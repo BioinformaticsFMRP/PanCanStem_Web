@@ -83,8 +83,7 @@ body <- dashboardBody(
                                                                               plotOutput("plotGseaTableDNA"),
                                                                               plotOutput("plotEnrichmentDNA")
                                                                           )),
-                                                                 tabPanel("DNA",
-                                                                          
+                                                                 tabPanel("RNA",
                                                                           box(width = NULL, solidHeader = TRUE,
                                                                               title = "RNA",
                                                                               plotOutput("plotGseaTableRNA"),
