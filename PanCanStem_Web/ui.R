@@ -29,7 +29,7 @@ busyIndicator <- function(text = "Working in progress...") {
 
 
 header <- dashboardHeader(
-  title = " PanCanStem Project: Enrichment analysis for DNAss and RNAss acrosss Clinical and Molecular phenotypes",
+  title = " PanCanStem Project: Enrichment analysis for mDNAsi and mRNAsi acrosss Clinical and Molecular phenotypes",
   titleWidth = 1000
 )
 
