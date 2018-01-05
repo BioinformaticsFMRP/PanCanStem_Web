@@ -63,24 +63,34 @@ body <- dashboardBody(
                 tabPanel("Table", DT::dataTableOutput('tbl')),
                 tabPanel("Plots",
                          column(width = 9,
-                                
-                                box(width = NULL, solidHeader = TRUE,
-                                    title = "Enrichment analysis for DNAss and RNAss acrosss Clinical and Molecular phenotypes (Mutation/Molecular subtypes)",
-                                    plotlyOutput("butterflyPlot")
-                                ),
-                                box(width = NULL, solidHeader = TRUE,
-                                    title = "Box plot",
-                                    plotOutput("boxplot")
-                                ),
-                                box(width = NULL, solidHeader = TRUE,
-                                    title = "DNA",
-                                    plotOutput("plotGseaTableDNA"),
-                                    plotOutput("plotEnrichmentDNA")
-                                ),
-                                box(width = NULL, solidHeader = TRUE,
-                                    title = "RNA",
-                                    plotOutput("plotGseaTableRNA"),
-                                    plotOutput("plotEnrichmentRNA")
+                                tabsetPanel(type = "tabs",
+                                            tabPanel("Scatter Plot",            
+                                                     box(width = NULL, solidHeader = TRUE,
+                                                         title = "Enrichment analysis for mDNAsi and mRNAsi acrosss Clinical and Molecular phenotypes (Mutation/Molecular subtypes)",
+                                                         plotlyOutput("butterflyPlot")
+                                                     )),
+                                            tabPanel("Box plots",
+                                                     box(width = NULL, solidHeader = TRUE,
+                                                         title = "Box plot",
+                                                         plotOutput("boxplot")
+                                                     )),
+                                            tabPanel("GSEA plots",
+                                                     tabsetPanel(type = "tabs",
+                                                                 tabPanel("DNA",
+                                                                          
+                                                                          box(width = NULL, solidHeader = TRUE,
+                                                                              title = "DNA",
+                                                                              plotOutput("plotGseaTableDNA"),
+                                                                              plotOutput("plotEnrichmentDNA")
+                                                                          )),
+                                                                 tabPanel("RNA",
+                                                                          box(width = NULL, solidHeader = TRUE,
+                                                                              title = "RNA",
+                                                                              plotOutput("plotGseaTableRNA"),
+                                                                              plotOutput("plotEnrichmentRNA")
+                                                                          ))
+                                                     )
+                                            )
                                 )
                          ),
                          column(width = 3,
@@ -93,30 +103,8 @@ body <- dashboardBody(
                                                    'Feature',
                                                    NULL,
                                                    multiple = FALSE),
-                                    actionButton("boxplotBt",
-                                                 "Plot boxplot",
-                                                 style = "background-color: #000080;
-                                                 color: #FFFFFF;
-                                                 margin-left: auto;
-                                                 margin-right: auto;
-                                                 width: 100%",
-                                                 icon = icon("picture-o")),
                                     actionButton("calculate",
-                                                 "Plots table of enrichment graphs",
-                                                 style = "background-color: #000080;
-                            color: #FFFFFF;
-                            margin-left: auto;
-                            margin-right: auto;
-                            width: 100%",
-                                                 icon = icon("flask"))
-                                ),
-                                box(width = NULL, 
-                                    selectizeInput('pathway',
-                                                   'Pathway',
-                                                   NULL,
-                                                   multiple = FALSE),
-                                    actionButton("plot",
-                                                 "Plot GSEA enrichment",
+                                                 "Plot GSEA and table of enrichment",
                                                  style = "background-color: #000080;
                             color: #FFFFFF;
                             margin-left: auto;
@@ -125,6 +113,8 @@ body <- dashboardBody(
                                                  icon = icon("flask"))
                                 )
                          )
+                         
+                         
                 )
     )
   )
