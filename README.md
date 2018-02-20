@@ -2,8 +2,8 @@
 
 This page contains additional information to support the TCGA PanCanAtlas Stemness project. We provide two components: 
 
-1) **Stemness Index Workflow** provides the steps and methods to regenerate our Stemness Indices (mRNAsi and mDNAsi). This workflow also provides steps to generate corresponding stemness indices for non-TCGA samples (e.g., users own samples). 
-2) **PanCanStemness Web portal** contains the enrichment analysis reported in our study.  
+1. **Stemness Index Workflow** provides the steps and methods to regenerate our Stemness Indices (mRNAsi and mDNAsi). This workflow also provides steps to generate corresponding stemness indices for non-TCGA samples (e.g., users own samples). 
+2. **PanCanStemness Web portal** contains the enrichment analysis reported in our study.  
 
 
 ### Stemness Index Workflow
