@@ -1,10 +1,16 @@
-name: "PanCanStem"
+name: PanCanStem
 navbar:
-  title: "PanCanStem"
+  title: PanCanStem
   left:
-    - text: "Introduction"
-      href: index.html
-    - text: "mRNAsi"
-      href: mRNAsi.html
-    - text: "mDNAsi"
-      href: mDNAsi.html
+  - text: Introduction
+    href: index.html
+  - text: mRNAsi
+    href: mRNAsi.html
+  - text: mDNAsi
+    href: mDNAsi.html
+output_dir: _site
+output:
+  html_document:
+    lib_dir: site_libs
+    self_contained: no
+

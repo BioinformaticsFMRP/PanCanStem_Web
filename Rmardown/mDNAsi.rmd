@@ -305,7 +305,7 @@ save(ss, file = "TCGA_mDNAsi.Rda")
 
 # Conclusion
 
-We demonstrated how to derive a gene signature capable of detecting stem cell states and applied this signature to reproduce *mDNAsi*. The signature itself was stored into a file (`pcbc-stemsig.p219.Rda` by default), allowing for additional downstream analyses, like test additional datasets. The robustness of the signature was estimated through leave-one-out cross-validation that is automatically performed by the `main.train()` function. After stepping through the workflow, we encourage the reader to replace PanCan33 dataset with their own samples to derive the corresponding *mRNAsi*.
+We demonstrated how to derive a gene signature capable of detecting stem cell states and applied this signature to reproduce *mDNAsi*. The signature itself was stored into a file (`pcbc-stemsig.p219.Rda` by default), allowing for additional downstream analyses, like test additional datasets. The robustness of the signature was estimated through leave-one-out cross-validation that is automatically performed by the `main.train()` function. After stepping through the workflow, we encourage the reader to replace PanCan33 dataset with their own samples to derive the corresponding *mDNAsi*.
 
 
 # Entire code
