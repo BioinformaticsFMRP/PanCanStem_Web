@@ -1,2 +1,4 @@
 theme: jekyll-theme-cayman
 title: PanCanStem Web
+github:
+  is_project_page: false
