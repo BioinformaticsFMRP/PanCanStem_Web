@@ -1,0 +1,10 @@
+theme: jekyll-theme-cayman
+title: PanCanStem Web
+description: Comprehensive Analysis of Cancer Stemness
+github:
+  is_project_page: false
+copyright: "This site is maintained by BioinformaticsFMRP"
+footer_links:
+  - title: GitHub
+    url: https://github.com/BioinformaticsFMRP
+    icon: fab fa-github-square
