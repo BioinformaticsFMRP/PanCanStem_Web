@@ -2,3 +2,4 @@ theme: jekyll-theme-cayman
 title: PanCanStem Web
 github:
   is_project_page: false
+copyright: "This site is maintained by BioinformaticsFMRP"
