@@ -20,6 +20,6 @@ to help the results data mining.
 This shiny app can be accessed either by a [hosted version](http://143.107.143.246:3838/PanCanStem_Web/)  
 or run a local version of PanCanStem Web with the following code in R
 ```r
-shiny::runGitHub("BioinformaticsFMRP/PanCanStem_Web")
+shiny::runGitHub("BioinformaticsFMRP/PanCanStem_Web/",subdir = "PanCanStem_Web")
 ```
 
