@@ -1,6 +1,6 @@
 theme: jekyll-theme-cayman
 title: PanCanStem Web
-description: Comprehensive Analysis of Cancer Stemness
+description: Machine Learning Identifies Stemness Features Associated with Oncogenic Dedifferentiation
 github:
   is_project_page: false
 copyright: "This site is maintained by BioinformaticsFMRP"

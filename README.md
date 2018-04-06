@@ -1,3 +1,7 @@
+## Article
+
+The manuscript "Machine Learning Identifies Stemness Features Associated with Oncogenic Dedifferentiation" can be found here: http://www.cell.com/cell/fulltext/S0092-8674(18)30358-1.
+
 ## Introduction
 
 This page contains additional information to support the TCGA PanCanAtlas Stemness project. We provide two components: 
